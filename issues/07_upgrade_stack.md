@@ -3,7 +3,7 @@ id: 07
 skill: pr-workflow
 branch-slug: upgrade-stack
 github_issue:
-status: open
+status: close
 type: feat
 対象: src/composer.json (変更), src/package.json (変更), src/vite.config.js (変更), src/resources/css/app.css (変更), src/tailwind.config.js (削除), src/postcss.config.js (削除), issues/done/07_upgrade-stack_pr.md (新規)
 内容: プロジェクト全体の技術スタックを最新化（PHP 8.4、Laravel 13、React 19、Tailwind v4、Vite 8、Inertia 2.0）し、Tailwind v4 の CSS-first 構成に設定を移行する。

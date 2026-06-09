@@ -3,7 +3,7 @@ id: 04
 skill: pr-workflow
 branch-slug: poller-implementation
 github_issue:
-status: open
+status: close
 type: feat
 対象: src/app/Console/Commands/WaterLevelPoller.php (新規), src/app/Console/Commands/WeatherPoller.php (新規), src/app/Services/SqsQueueService.php (新規)
 内容: 定期実行されてモックAPI（または現在時刻に応じたモックデータ生成）から水位・気象データを取得し、JSONフォーマットに正規化した上でAWS SQSにメッセージを送信する処理の実装。

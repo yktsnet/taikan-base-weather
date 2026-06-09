@@ -3,7 +3,7 @@ id: 02
 skill: pr-workflow
 branch-slug: laravel-skeleton
 github_issue:
-status: open
+status: close
 type: feat
 対象: src/composer.json (新規), src/package.json (新規), src/database/migrations/2026_06_09_000001_create_stations_table.php (新規), src/database/migrations/2026_06_09_000002_create_water_levels_table.php (新規), src/database/migrations/2026_06_09_000003_create_weather_records_table.php (新規), src/database/migrations/2026_06_09_000004_create_alerts_table.php (新規)
 内容: Laravel 11 + Inertia + Reactの依存定義、およびPLAN.mdに基づくデータモデル（4テーブル）のマイグレーション作成

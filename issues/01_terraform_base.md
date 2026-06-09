@@ -3,7 +3,7 @@ id: 01
 skill: pr-workflow
 branch-slug: terraform-base
 github_issue:
-status: open
+status: close
 type: feat
 対象: terraform/main.tf (新規), terraform/variables.tf (新規), terraform/outputs.tf (新規)
 内容: PLAN.mdのPhase 1に基づく、VPC、RDS、SQS、S3の基本インフラの定義

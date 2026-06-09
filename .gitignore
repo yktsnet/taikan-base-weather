@@ -1,24 +1,24 @@
 # Laravel
-/vendor/
+vendor/
 .env
 .env.backup
 .env.production
 .env.*.local
-/storage/*.key
-/storage/app/public
-/storage/framework/cache/data
-/storage/framework/sessions
-/storage/framework/testing
-/storage/framework/views
-/bootstrap/cache/
-/public/hot
-/public/storage
+storage/*.key
+storage/app/public
+storage/framework/cache/data
+storage/framework/sessions
+storage/framework/testing
+storage/framework/views
+bootstrap/cache/
+public/hot
+public/storage
 .phpunit.result.cache
 auth.json
 
 # Node / Vue / Vite
 node_modules/
-/public/build
+public/build
 npm-debug.log*
 yarn-error.log
 .pnpm-debug.log*

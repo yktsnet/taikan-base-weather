@@ -59,7 +59,7 @@ class WeatherPoller extends Command
         foreach ($stations as $station) {
             // Generate mock weather data based on station latitude and time
             // Base temperature based on latitude (rough approximation)
-            $latitude = $station->latitude ?? 35.0; // Default to somewhere in Japan
+            $latitude = $station->lat ?? 35.0; // Default to somewhere in Japan
             $baseTemp = 30.0 - abs($latitude - 30) * 0.5;
 
             // Add diurnal variation

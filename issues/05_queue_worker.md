@@ -3,7 +3,7 @@ id: 05
 skill: pr-workflow
 branch-slug: queue-worker
 github_issue:
-status: open
+status: close
 type: feat
 対象: src/app/Jobs/ProcessWaterLevelEvent.php (新規), src/app/Jobs/ProcessWeatherEvent.php (新規), src/app/Mail/AlertNotification.php (新規), issues/done/05_queue-worker_pr.md (新規)
 内容: AWS SQSからデータを受信してデータベースに保存し、水位が閾値を超えた場合にアラート登録とSESによる管理者向け警告メール通知を行うロジックの実装。

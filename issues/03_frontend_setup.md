@@ -3,7 +3,7 @@ id: 03
 skill: pr-workflow
 branch-slug: frontend-setup
 github_issue:
-status: open
+status: close
 type: feat
 対象: src/vite.config.js (新規), src/tailwind.config.js (新規), src/postcss.config.js (新規), src/resources/views/app.blade.php (新規), src/resources/js/app.jsx (新規), src/database/seeders/StationSeeder.php (新規), src/database/seeders/DatabaseSeeder.php
 内容: Inertia + React + Vite + Tailwind CSSを動作させるためのフロントエンド基本ファイルの配置と、関西圏10観測所のデータを投入するSeederの作成。

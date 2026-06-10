@@ -4,21 +4,21 @@ vendor/
 .env.backup
 .env.production
 .env.*.local
-storage/*.key
-storage/app/public
-storage/framework/cache/data
-storage/framework/sessions
-storage/framework/testing
-storage/framework/views
-bootstrap/cache/
-public/hot
-public/storage
+src/storage/*.key
+src/storage/app/public
+src/storage/framework/cache/data
+src/storage/framework/sessions
+src/storage/framework/testing
+src/storage/framework/views
+src/bootstrap/cache/
+src/public/hot
+src/public/storage
 .phpunit.result.cache
 auth.json
 
 # Node / Vue / Vite
 node_modules/
-public/build
+src/public/build
 npm-debug.log*
 yarn-error.log
 .pnpm-debug.log*

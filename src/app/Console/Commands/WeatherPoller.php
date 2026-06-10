@@ -2,10 +2,10 @@
 
 namespace App\Console\Commands;
 
-use Illuminate\Console\Command;
 use App\Models\Station;
 use App\Services\SqsQueueService;
 use Carbon\Carbon;
+use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Log;
 
 class WeatherPoller extends Command
@@ -44,6 +44,7 @@ class WeatherPoller extends Command
 
         if ($stations->isEmpty()) {
             $this->warn('No stations found.');
+
             return;
         }
 
@@ -51,6 +52,7 @@ class WeatherPoller extends Command
 
         if (empty($queueUrl)) {
             $this->error('Weather SQS queue URL is not configured.');
+
             return;
         }
 

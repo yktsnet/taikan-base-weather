@@ -2,10 +2,10 @@
 
 namespace App\Console\Commands;
 
-use Illuminate\Console\Command;
 use App\Models\Station;
 use App\Services\SqsQueueService;
 use Carbon\Carbon;
+use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Log;
 
 class WaterLevelPoller extends Command
@@ -45,6 +45,7 @@ class WaterLevelPoller extends Command
 
         if ($stations->isEmpty()) {
             $this->warn('No stations found.');
+
             return;
         }
 
@@ -52,6 +53,7 @@ class WaterLevelPoller extends Command
 
         if (empty($queueUrl)) {
             $this->error('Water level SQS queue URL is not configured.');
+
             return;
         }
 

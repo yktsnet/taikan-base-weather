@@ -2,13 +2,13 @@
 
 namespace App\Jobs;
 
+use App\Models\Station;
+use App\Models\WeatherRecord;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
-use App\Models\Station;
-use App\Models\WeatherRecord;
 use Illuminate\Support\Facades\Log;
 
 class ProcessWeatherEvent implements ShouldQueue
@@ -32,8 +32,9 @@ class ProcessWeatherEvent implements ShouldQueue
     {
         $station = Station::where('code', $this->data['station_code'])->first();
 
-        if (!$station) {
+        if (! $station) {
             Log::warning("Station not found for code: {$this->data['station_code']}");
+
             return;
         }
 

@@ -18,4 +18,20 @@ class Station extends Model
     {
         return $this->hasOne(WeatherRecord::class)->latestOfMany('observed_at');
     }
+
+    public function determineAlertLevel(float $level): string
+    {
+        $dangerLevel = $this->danger_level;
+        $warningLevel = $this->warning_level;
+
+        if ($dangerLevel !== null && $level >= $dangerLevel) {
+            return 'danger';
+        } elseif ($warningLevel !== null && $level >= $warningLevel && ($dangerLevel === null || $level < $dangerLevel)) {
+            return 'warning';
+        } elseif ($warningLevel !== null && $level >= $warningLevel * 0.8 && $level < $warningLevel) {
+            return 'caution';
+        }
+
+        return 'normal';
+    }
 }

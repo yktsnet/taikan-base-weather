@@ -2,17 +2,17 @@
 
 namespace App\Jobs;
 
+use App\Mail\AlertNotification;
+use App\Models\Alert;
+use App\Models\Station;
+use App\Models\WaterLevel;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
-use App\Models\Station;
-use App\Models\WaterLevel;
-use App\Models\Alert;
-use App\Mail\AlertNotification;
-use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Mail;
 
 class ProcessWaterLevelEvent implements ShouldQueue
 {
@@ -41,8 +41,9 @@ class ProcessWaterLevelEvent implements ShouldQueue
 
         $station = Station::where('code', $this->data['station_code'])->first();
 
-        if (!$station) {
+        if (! $station) {
             Log::warning("Station not found for code: {$this->data['station_code']}");
+
             return;
         }
 
@@ -83,7 +84,7 @@ class ProcessWaterLevelEvent implements ShouldQueue
 
                 $alert->update(['notified' => true]);
             } catch (\Exception $e) {
-                Log::error("Failed to send alert email: " . $e->getMessage());
+                Log::error('Failed to send alert email: '.$e->getMessage());
             }
         }
     }

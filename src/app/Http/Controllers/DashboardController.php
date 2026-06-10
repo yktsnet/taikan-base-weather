@@ -2,11 +2,10 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Station;
 use App\Models\Alert;
+use App\Models\Station;
 use App\Models\WaterLevel;
 use App\Models\WeatherRecord;
-use Illuminate\Http\Request;
 use Inertia\Inertia;
 
 class DashboardController extends Controller

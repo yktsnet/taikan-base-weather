@@ -1,0 +1,54 @@
+services:
+  app:
+    build:
+      context: ./src
+      dockerfile: Dockerfile
+    image: kawa-watch-app
+    container_name: kawa-watch-app
+    restart: unless-stopped
+    working_dir: /var/www
+    volumes:
+      - ./src:/var/www
+    ports:
+      - "8000:8000"
+      - "5173:5173"
+    depends_on:
+      - db
+      - redis
+    command: sh -c "if [ ! -f vendor/autoload.php ]; then composer install; fi && php artisan serve --host=0.0.0.0 --port=8000"
+
+  db:
+    image: mysql:8.0
+    container_name: kawa-watch-db
+    restart: unless-stopped
+    environment:
+      MYSQL_DATABASE: laravel
+      MYSQL_ROOT_PASSWORD: password
+      MYSQL_USER: laravel
+      MYSQL_PASSWORD: password
+    ports:
+      - "3306:3306"
+    volumes:
+      - kawa-watch-db-data:/var/lib/mysql
+
+  redis:
+    image: redis:alpine
+    container_name: kawa-watch-redis
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+
+  mail:
+    image: axllent/mailpit
+    container_name: kawa-watch-mail
+    restart: unless-stopped
+    ports:
+      - "1025:1025"
+      - "8025:8025"
+    environment:
+      MP_MAX_MESSAGES: 5000
+      MP_SMTP_AUTH_ACCEPT_ANY: 1
+      MP_SMTP_AUTH_ALLOW_INSECURE: 1
+
+volumes:
+  kawa-watch-db-data:

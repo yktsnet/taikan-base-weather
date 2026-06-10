@@ -5,8 +5,8 @@ branch-slug: testing-pest-ci
 github_issue:
 status: open
 type: feat
-対象: src/composer.json (変更), src/tests/Feature/PollerTest.php (新規), src/tests/Feature/QueueWorkerTest.php (新規), src/tests/Unit/StationTest.php (新規), .github/workflows/test.yml (新規), issues/done/09_testing-pest-ci_pr.md (新規)
-内容: Pest (または PHPUnit) テストスイートをプロジェクトに導入し、データ収集ポーリングやキューワーカーによるアラート判定機能の自動テストを実装する。また、GitHub ActionsによるCI（自動テスト、スタイルチェック）を構築する。
+対象: src/composer.json (変更), src/vite.config.js (変更), src/tests/Feature/PollerTest.php (新規), src/tests/Feature/QueueWorkerTest.php (新規), src/tests/Unit/StationTest.php (新規), .github/workflows/test.yml (新規), issues/done/09_testing-pest-ci_pr.md (新規)
+内容: Pest (または PHPUnit) テストスイートをプロジェクトに導入し、データ収集ポーリングやキューワーカーによるアラート判定機能のテストを実装する。また、GitHub ActionsによるCI（自動テスト、スタイルチェック）を構築する。さらに、Vite 開発サーバーをコンテナ内で実行可能にする設定も追加する。
 確認: テストコードを実行し、すべてパスすること。また GitHub Actions ワークフローが正しく定義されていること。
 ---
 ## 実装仕様
@@ -28,6 +28,18 @@ type: feat
 - **`.github/workflows/test.yml`** [NEW]:
   - GitHub Actions のワークフローを作成し、コードスタイル確認（Pint 等）、静的解析（PHPStan 等）、および Pest テストスイートの実行が PR/Push 時に自動実行されるようにする。
 
+### 4. Vite 開発サーバーの Docker 対応
+- **`src/vite.config.js`** [MODIFY]:
+  - Vite 開発サーバーを Docker コンテナ内で稼働させてもホスト側のブラウザからアクセスできるように、`server` オプションを追加する。
+    ```javascript
+    server: {
+        host: '0.0.0.0',
+        hmr: {
+            host: 'localhost',
+        },
+    }
+    ```
+
 ---
 
 ## issues/done/09_testing-pest-ci_pr.md の出力内容（必須）
@@ -39,13 +51,14 @@ Julesは、以下のテキストをそのままPR控えファイル `issues/done
 - 観測データのしきい値判定ロジックに対するユニットテスト `StationTest.php` を作成しました。
 - APIポーリングコマンドに対する機能テスト `PollerTest.php`、キューワーカーによるイベント処理とアラートメール送信に対する機能テスト `QueueWorkerTest.php` を作成しました。
 - プルリクエストおよびプッシュ時に、スタイルチェック、Linter、テストスイートを自動実行する `.github/workflows/test.yml` を構築しました。
+- Dockerコンテナ内でVite開発サーバーを実行した際にホストブラウザからアクセス可能にするため、`vite.config.js` に `server` 設定（`host: '0.0.0.0'` 等）を反映しました。
 
 ## 静的確認結果
 - テストスイートがローカル環境ですべてグリーン（パス）であることを確認しました。
-- GitHub Actions のワークフロー定義に構文エラーがないことを確認しました。
+- GitHub Actions のワークフロー定義および `vite.config.js` の構文にエラーがないことを確認しました。
 
 ## 検証手順
-user様は、以下の手順でテストの実行をご確認ください。
+user様は、以下の手順でテストの実行およびViteの設定をご確認ください。
 
 1. `src` ディレクトリ配下でテストを実行し、すべてのテストがパスすることを確認します。
    ```bash

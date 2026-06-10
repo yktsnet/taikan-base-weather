@@ -3,12 +3,12 @@
 use App\Models\Station;
 
 test('station model exists', function () {
-    $station = new Station();
+    $station = new Station;
     expect($station)->toBeInstanceOf(Station::class);
 });
 
 test('station model calculates alert levels correctly', function () {
-    $station = new Station();
+    $station = new Station;
     $station->warning_level = 3.0;
     $station->danger_level = 5.0;
 

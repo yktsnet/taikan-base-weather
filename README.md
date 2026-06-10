@@ -52,27 +52,65 @@ stations（観測所マスタ）
 
 ---
 
-## WSL ローカル開発
+## ローカル開発環境の構築
 
-### 前提
-- WSL2 (Ubuntu) + PHP 8.3 / Node.js (Vite動作環境) がインストール済みであること
+開発環境は **Docker Compose（推奨）** または **WSLネイティブ（SQLite）** の2つの方法で起動可能です。
 
-### 初回セットアップ
+---
 
+### A. Docker Compose による構築（推奨）
+
+Docker を利用して、アプリケーション、MySQL データベース、Redis キャッシュ/キュー、および Mailpit メールキャッチャーを一括で起動します。
+
+#### 1. 前提条件
+* Docker / Docker Desktop がインストールされ、デーモンが起動していること
+
+#### 2. 初回セットアップ & 起動
 ```bash
-# 1. リポジトリのクローン
-git clone git@github.com:kyamakawa-widget/kawa-watch.git
-cd kawa-watch/src
+# 1. コンテナのビルドとバックグラウンド起動
+docker compose up -d --build
 
-# 2. 依存関係のインストール
+# 2. 依存関係のインストールと環境設定
+docker compose exec app composer install
+docker compose exec app npm install
+docker compose exec app cp .env.docker .env
+docker compose exec app php artisan key:generate
+
+# 3. データベースマイグレーションと初期データの投入
+docker compose exec app php artisan migrate --seed
+```
+
+#### 3. 開発サーバー（Vite）の起動
+```bash
+docker compose exec app npm run dev
+```
+
+#### 4. アクセス先
+* **ダッシュボード**: [http://localhost:8000](http://localhost:8000)
+* **Mailpit (メールキャッチャー)**: [http://localhost:8025](http://localhost:8025)
+
+---
+
+### B. WSL ネイティブによる構築（SQLite）
+
+WSL2 に直接 PHP や Node.js をインストールして起動します。
+
+#### 1. 前提条件
+* WSL2 (Ubuntu) + PHP 8.3/8.4 + Node.js (Vite動作環境) がインストール済みであること
+
+#### 2. 初回セットアップ
+```bash
+cd src
+
+# 1. 依存関係のインストール
 composer install
 npm install
 
-# 3. 環境設定ファイルの準備とキー生成
+# 2. 環境設定ファイルの準備とキー生成
 cp .env.example .env
 php artisan key:generate
 
-# 4. SQLite データベースの作成と接続設定 (MySQL設定の無効化)
+# 3. SQLite データベースの作成と接続設定 (MySQL設定の無効化)
 touch database/database.sqlite
 sed -i 's/DB_CONNECTION=mysql/DB_CONNECTION=sqlite/g' .env
 sed -i 's/^DB_HOST=/#DB_HOST=/g' .env
@@ -81,19 +119,15 @@ sed -i 's/^DB_DATABASE=/#DB_DATABASE=/g' .env
 sed -i 's/^DB_USERNAME=/#DB_USERNAME=/g' .env
 sed -i 's/^DB_PASSWORD=/#DB_PASSWORD=/g' .env
 
-# 5. セッションとキャッシュを file に変更 (SQLエラーの回避)
+# 4. セッションとキャッシュを file に変更 (SQLエラーの回避)
 sed -i 's/SESSION_DRIVER=database/SESSION_DRIVER=file/g' .env
 sed -i 's/CACHE_STORE=database/CACHE_STORE=file/g' .env
 
-# 6. マイグレーションと初期マスタデータ (シード) の投入
+# 5. マイグレーションと初期マスタデータ (シード) の投入
 php artisan migrate --seed
-
-# 7. アセットのビルド
-npm run build
 ```
 
-### 起動方法
-
+#### 3. 起動方法
 ```bash
 # ターミナル1: Vite開発サーバーの起動
 npm run dev
@@ -102,6 +136,32 @@ npm run dev
 php artisan serve
 ```
 → [http://localhost:8000](http://localhost:8000) でアクセス可能
+
+---
+
+## 自動テストの実行
+
+本プロジェクトでは **Pest** テストスイートおよびコードフォーマッター（Pint）を導入しています。
+
+### 1. テストの実行
+* **Docker Compose 環境**:
+  ```bash
+  docker compose exec app php artisan test
+  ```
+* **WSL ネイティブ環境**:
+  ```bash
+  php artisan test
+  ```
+
+### 2. コードスタイルのチェックと整形 (Laravel Pint)
+* **Docker Compose 環境**:
+  ```bash
+  docker compose exec app ./vendor/bin/pint
+  ```
+* **WSL ネイティブ環境**:
+  ```bash
+  ./vendor/bin/pint
+  ```
 
 ---
 

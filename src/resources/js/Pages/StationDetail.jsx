@@ -1,7 +1,155 @@
 import React from 'react';
 import { Head, Link } from '@inertiajs/react';
+import {
+  Chart as ChartJS,
+  CategoryScale,
+  LinearScale,
+  PointElement,
+  LineElement,
+  BarElement,
+  Title,
+  Tooltip,
+  Legend,
+} from 'chart.js';
+import { Chart } from 'react-chartjs-2';
+
+ChartJS.register(
+  CategoryScale,
+  LinearScale,
+  PointElement,
+  LineElement,
+  BarElement,
+  Title,
+  Tooltip,
+  Legend
+);
 
 export default function StationDetail({ station, water_levels, weather_records }) {
+    // Sort data from oldest to newest for chronological display
+    const sortedWaterLevels = [...water_levels].reverse();
+    // Assuming weather records correspond in time; if not perfectly aligned, we might need to merge by time
+    // For simplicity, we assume they align by observed_at or we just match the timestamps
+
+    // Create unified time labels from water levels (or merge both)
+    const labels = sortedWaterLevels.map(wl => {
+        // format date optionally
+        return new Date(wl.observed_at).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+    });
+
+    // Match weather records to the water level labels
+    // We reverse weather_records to match chronology
+    const sortedWeatherRecords = [...weather_records].reverse();
+    const precipData = labels.map((label, index) => {
+        // If they perfectly align:
+        const wr = sortedWeatherRecords[index];
+        return wr ? wr.precipitation_mm : 0;
+    });
+
+    const waterLevelData = sortedWaterLevels.map(wl => wl.level_m);
+
+    // Prepare chart data
+    const chartData = {
+        labels,
+        datasets: [
+            {
+                type: 'line',
+                label: 'Water Level (m)',
+                data: waterLevelData,
+                borderColor: 'rgb(53, 162, 235)',
+                backgroundColor: 'rgba(53, 162, 235, 0.5)',
+                yAxisID: 'y',
+                tension: 0.1,
+            },
+            {
+                type: 'bar',
+                label: 'Precipitation (mm)',
+                data: precipData,
+                backgroundColor: 'rgba(75, 192, 192, 0.5)',
+                yAxisID: 'y1',
+            },
+            // Warning Level Line (Dataset trick since chartjs-plugin-annotation is not installed)
+            {
+                type: 'line',
+                label: 'Warning Level',
+                data: Array(labels.length).fill(station.warning_level),
+                borderColor: 'orange',
+                borderWidth: 2,
+                borderDash: [5, 5],
+                pointRadius: 0,
+                yAxisID: 'y',
+            },
+            // Danger Level Line
+            {
+                type: 'line',
+                label: 'Danger Level',
+                data: Array(labels.length).fill(station.danger_level),
+                borderColor: 'red',
+                borderWidth: 2,
+                borderDash: [5, 5],
+                pointRadius: 0,
+                yAxisID: 'y',
+            }
+        ],
+    };
+
+    const chartOptions = {
+        responsive: true,
+        interaction: {
+            mode: 'index',
+            intersect: false,
+        },
+        stacked: false,
+        plugins: {
+            title: {
+                display: true,
+                text: 'Water Level and Precipitation History',
+            },
+            tooltip: {
+                callbacks: {
+                    label: function(context) {
+                        let label = context.dataset.label || '';
+                        if (label) {
+                            label += ': ';
+                        }
+                        if (context.parsed.y !== null) {
+                            label += context.parsed.y;
+                            if (context.dataset.yAxisID === 'y') label += ' m';
+                            else if (context.dataset.yAxisID === 'y1') label += ' mm';
+                        }
+                        return label;
+                    }
+                }
+            }
+        },
+        scales: {
+            y: {
+                type: 'linear',
+                display: true,
+                position: 'left',
+                title: {
+                    display: true,
+                    text: 'Water Level (m)'
+                },
+                suggestedMin: 0,
+                // Ensure warning/danger levels fit
+                suggestedMax: Math.max(...waterLevelData, station.danger_level) + 1,
+            },
+            y1: {
+                type: 'linear',
+                display: true,
+                position: 'right',
+                title: {
+                    display: true,
+                    text: 'Precipitation (mm)'
+                },
+                grid: {
+                    drawOnChartArea: false, // only want the grid lines for one axis to show up
+                },
+                suggestedMin: 0,
+            },
+        },
+    };
+
     return (
         <div className="min-h-screen bg-gray-100 py-8">
             <Head title={`Station Detail - ${station.name}`} />
@@ -13,6 +161,13 @@ export default function StationDetail({ station, water_levels, weather_records }
                     >
                         &larr; Back to Dashboard
                     </Link>
+                </div>
+
+                {/* Chart Section */}
+                <div className="bg-white shadow overflow-hidden sm:rounded-lg mb-8 p-4">
+                    <div className="h-96 w-full">
+                        <Chart type='bar' data={chartData} options={chartOptions} />
+                    </div>
                 </div>
 
                 <div className="bg-white shadow overflow-hidden sm:rounded-lg mb-8">

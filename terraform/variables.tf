@@ -10,6 +10,12 @@ variable "aws_region" {
   default     = "ap-northeast-1"
 }
 
+variable "use_localstack" {
+  description = "Whether to use LocalStack for local development"
+  type        = bool
+  default     = true
+}
+
 variable "db_username" {
   description = "The master username for the RDS instance"
   type        = string

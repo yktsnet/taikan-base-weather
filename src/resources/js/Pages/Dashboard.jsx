@@ -1,5 +1,34 @@
 import React from 'react';
 import { Head, Link } from '@inertiajs/react';
+import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
+import 'leaflet/dist/leaflet.css';
+import L from 'leaflet';
+
+// Leaflet default icon fix
+delete L.Icon.Default.prototype._getIconUrl;
+L.Icon.Default.mergeOptions({
+    iconRetinaUrl: '/images/marker-icon-2x.png',
+    iconUrl: '/images/marker-icon.png',
+    shadowUrl: '/images/marker-shadow.png',
+});
+
+// Custom icons based on status
+const createIcon = (color) => new L.Icon({
+    iconUrl: `/images/marker-icon-2x-${color}.png`,
+    shadowUrl: '/images/marker-shadow.png',
+    iconSize: [25, 41],
+    iconAnchor: [12, 41],
+    popupAnchor: [1, -34],
+    shadowSize: [41, 41]
+});
+
+const icons = {
+    normal: createIcon('green'),
+    caution: createIcon('yellow'),
+    warning: createIcon('orange'),
+    danger: createIcon('red'),
+    default: createIcon('blue')
+};
 
 export default function Dashboard({ stations }) {
     const getStatusBadge = (status) => {
@@ -17,6 +46,10 @@ export default function Dashboard({ stations }) {
         );
     };
 
+    const mapCenter = stations.length > 0
+        ? [stations[0].latitude || 34.6937, stations[0].longitude || 135.5023] // Default to Osaka if no coords
+        : [34.6937, 135.5023];
+
     return (
         <div className="min-h-screen bg-gray-100 py-8">
             <Head title="Dashboard" />
@@ -29,6 +62,48 @@ export default function Dashboard({ stations }) {
                     >
                         Alert History
                     </Link>
+                </div>
+
+                {/* Map Section */}
+                <div className="mb-8 bg-white overflow-hidden shadow rounded-lg p-4">
+                    <h2 className="text-xl font-semibold mb-4">Observation Stations Map</h2>
+                    <div className="h-96 w-full rounded-lg overflow-hidden border border-gray-300">
+                        <MapContainer center={mapCenter} zoom={9} style={{ height: '100%', width: '100%' }}>
+                            <TileLayer
+                                attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+                                url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+                            />
+                            {stations.map(station => {
+                                if (!station.latitude || !station.longitude) return null;
+                                const status = station.latest_water_level?.alert_status || 'default';
+                                const icon = icons[status] || icons.default;
+                                return (
+                                    <Marker
+                                        key={station.id}
+                                        position={[station.latitude, station.longitude]}
+                                        icon={icon}
+                                    >
+                                        <Popup>
+                                            <div className="font-sans">
+                                                <h3 className="font-bold text-lg mb-1">{station.name}</h3>
+                                                <p className="text-sm text-gray-600 mb-2">{station.river_name}</p>
+                                                <p className="text-sm mb-2">
+                                                    <strong>Water Level: </strong>
+                                                    {station.latest_water_level?.level_m ?? 'N/A'} m
+                                                </p>
+                                                <Link
+                                                    href={`/stations/${station.id}`}
+                                                    className="text-indigo-600 hover:text-indigo-900 text-sm font-medium"
+                                                >
+                                                    View Details &rarr;
+                                                </Link>
+                                            </div>
+                                        </Popup>
+                                    </Marker>
+                                );
+                            })}
+                        </MapContainer>
+                    </div>
                 </div>
 
                 <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">

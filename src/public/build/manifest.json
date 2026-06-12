@@ -1,6 +1,18 @@
 {
+  "node_modules/leaflet/dist/images/layers-2x.png": {
+    "file": "assets/layers-2x-Bpkbi35X.png",
+    "src": "node_modules/leaflet/dist/images/layers-2x.png"
+  },
+  "node_modules/leaflet/dist/images/layers.png": {
+    "file": "assets/layers-BWBAp2CZ.png",
+    "src": "node_modules/leaflet/dist/images/layers.png"
+  },
+  "node_modules/leaflet/dist/images/marker-icon.png": {
+    "file": "assets/marker-icon-hN30_KVU.png",
+    "src": "node_modules/leaflet/dist/images/marker-icon.png"
+  },
   "resources/js/Pages/AlertHistory.jsx": {
-    "file": "assets/AlertHistory-DbPkApz6.js",
+    "file": "assets/AlertHistory-CkuMsO0u.js",
     "name": "AlertHistory",
     "src": "resources/js/Pages/AlertHistory.jsx",
     "isDynamicEntry": true,
@@ -9,16 +21,24 @@
     ]
   },
   "resources/js/Pages/Dashboard.jsx": {
-    "file": "assets/Dashboard-B-Bl8ZjR.js",
+    "file": "assets/Dashboard-DyVvDMkA.js",
     "name": "Dashboard",
     "src": "resources/js/Pages/Dashboard.jsx",
     "isDynamicEntry": true,
     "imports": [
       "resources/js/app.jsx"
+    ],
+    "css": [
+      "assets/Dashboard-1DTFk8zz.css"
+    ],
+    "assets": [
+      "assets/layers-BWBAp2CZ.png",
+      "assets/layers-2x-Bpkbi35X.png",
+      "assets/marker-icon-hN30_KVU.png"
     ]
   },
   "resources/js/Pages/StationDetail.jsx": {
-    "file": "assets/StationDetail-VsrA4TQG.js",
+    "file": "assets/StationDetail-D4EX9oWV.js",
     "name": "StationDetail",
     "src": "resources/js/Pages/StationDetail.jsx",
     "isDynamicEntry": true,
@@ -27,7 +47,7 @@
     ]
   },
   "resources/js/app.jsx": {
-    "file": "assets/app-ro1Cossk.js",
+    "file": "assets/app-DhgGsqKR.js",
     "name": "app",
     "src": "resources/js/app.jsx",
     "isEntry": true,
@@ -37,7 +57,7 @@
       "resources/js/Pages/StationDetail.jsx"
     ],
     "css": [
-      "assets/app-BNnGJDII.css"
+      "assets/app-CXxeBJb2.css"
     ]
   }
 }

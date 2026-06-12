@@ -1,29 +1,8 @@
-terraform {
-  required_providers {
-    aws = {
-      source  = "hashicorp/aws"
-      version = "~> 5.0"
-    }
-  }
-  required_version = ">= 1.5.0"
-}
-
-provider "aws" {
-  region = var.aws_region
-
-  default_tags {
-    tags = {
-      Project     = "kawa-watch"
-      Environment = var.environment
-      ManagedBy   = "Terraform"
-    }
-  }
-}
-
 # ==========================================
 # Network (VPC & Subnets)
 # ==========================================
 resource "aws_vpc" "main" {
+  count                = var.use_localstack ? 0 : 1
   cidr_block           = "10.0.0.0/16"
   enable_dns_support   = true
   enable_dns_hostnames = true
@@ -35,7 +14,8 @@ resource "aws_vpc" "main" {
 
 # Internet Gateway
 resource "aws_internet_gateway" "main" {
-  vpc_id = aws_vpc.main.id
+  count  = var.use_localstack ? 0 : 1
+  vpc_id = aws_vpc.main[0].id
 
   tags = {
     Name = "kawa-watch-igw-${var.environment}"
@@ -44,7 +24,8 @@ resource "aws_internet_gateway" "main" {
 
 # Public Subnets
 resource "aws_subnet" "public_1a" {
-  vpc_id                  = aws_vpc.main.id
+  count                   = var.use_localstack ? 0 : 1
+  vpc_id                  = aws_vpc.main[0].id
   cidr_block              = "10.0.1.0/24"
   availability_zone       = "ap-northeast-1a"
   map_public_ip_on_launch = true
@@ -55,7 +36,8 @@ resource "aws_subnet" "public_1a" {
 }
 
 resource "aws_subnet" "public_1c" {
-  vpc_id                  = aws_vpc.main.id
+  count                   = var.use_localstack ? 0 : 1
+  vpc_id                  = aws_vpc.main[0].id
   cidr_block              = "10.0.2.0/24"
   availability_zone       = "ap-northeast-1c"
   map_public_ip_on_launch = true
@@ -67,7 +49,8 @@ resource "aws_subnet" "public_1c" {
 
 # Private Subnets (For ECS)
 resource "aws_subnet" "private_1a" {
-  vpc_id            = aws_vpc.main.id
+  count             = var.use_localstack ? 0 : 1
+  vpc_id            = aws_vpc.main[0].id
   cidr_block        = "10.0.10.0/24"
   availability_zone = "ap-northeast-1a"
 
@@ -77,7 +60,8 @@ resource "aws_subnet" "private_1a" {
 }
 
 resource "aws_subnet" "private_1c" {
-  vpc_id            = aws_vpc.main.id
+  count             = var.use_localstack ? 0 : 1
+  vpc_id            = aws_vpc.main[0].id
   cidr_block        = "10.0.11.0/24"
   availability_zone = "ap-northeast-1c"
 
@@ -88,7 +72,8 @@ resource "aws_subnet" "private_1c" {
 
 # Isolated Subnets (For RDS)
 resource "aws_subnet" "isolated_1a" {
-  vpc_id            = aws_vpc.main.id
+  count             = var.use_localstack ? 0 : 1
+  vpc_id            = aws_vpc.main[0].id
   cidr_block        = "10.0.20.0/24"
   availability_zone = "ap-northeast-1a"
 
@@ -98,7 +83,8 @@ resource "aws_subnet" "isolated_1a" {
 }
 
 resource "aws_subnet" "isolated_1c" {
-  vpc_id            = aws_vpc.main.id
+  count             = var.use_localstack ? 0 : 1
+  vpc_id            = aws_vpc.main[0].id
   cidr_block        = "10.0.21.0/24"
   availability_zone = "ap-northeast-1c"
 
@@ -109,11 +95,12 @@ resource "aws_subnet" "isolated_1c" {
 
 # Public Route Table
 resource "aws_route_table" "public" {
-  vpc_id = aws_vpc.main.id
+  count  = var.use_localstack ? 0 : 1
+  vpc_id = aws_vpc.main[0].id
 
   route {
     cidr_block = "0.0.0.0/0"
-    gateway_id = aws_internet_gateway.main.id
+    gateway_id = aws_internet_gateway.main[0].id
   }
 
   tags = {
@@ -122,18 +109,21 @@ resource "aws_route_table" "public" {
 }
 
 resource "aws_route_table_association" "public_1a" {
-  subnet_id      = aws_subnet.public_1a.id
-  route_table_id = aws_route_table.public.id
+  count          = var.use_localstack ? 0 : 1
+  subnet_id      = aws_subnet.public_1a[0].id
+  route_table_id = aws_route_table.public[0].id
 }
 
 resource "aws_route_table_association" "public_1c" {
-  subnet_id      = aws_subnet.public_1c.id
-  route_table_id = aws_route_table.public.id
+  count          = var.use_localstack ? 0 : 1
+  subnet_id      = aws_subnet.public_1c[0].id
+  route_table_id = aws_route_table.public[0].id
 }
 
 # Private/Isolated Route Tables (No external access by default in this phase)
 resource "aws_route_table" "private" {
-  vpc_id = aws_vpc.main.id
+  count  = var.use_localstack ? 0 : 1
+  vpc_id = aws_vpc.main[0].id
 
   tags = {
     Name = "kawa-watch-private-rt-${var.environment}"
@@ -141,17 +131,20 @@ resource "aws_route_table" "private" {
 }
 
 resource "aws_route_table_association" "private_1a" {
-  subnet_id      = aws_subnet.private_1a.id
-  route_table_id = aws_route_table.private.id
+  count          = var.use_localstack ? 0 : 1
+  subnet_id      = aws_subnet.private_1a[0].id
+  route_table_id = aws_route_table.private[0].id
 }
 
 resource "aws_route_table_association" "private_1c" {
-  subnet_id      = aws_subnet.private_1c.id
-  route_table_id = aws_route_table.private.id
+  count          = var.use_localstack ? 0 : 1
+  subnet_id      = aws_subnet.private_1c[0].id
+  route_table_id = aws_route_table.private[0].id
 }
 
 resource "aws_route_table" "isolated" {
-  vpc_id = aws_vpc.main.id
+  count  = var.use_localstack ? 0 : 1
+  vpc_id = aws_vpc.main[0].id
 
   tags = {
     Name = "kawa-watch-isolated-rt-${var.environment}"
@@ -159,13 +152,15 @@ resource "aws_route_table" "isolated" {
 }
 
 resource "aws_route_table_association" "isolated_1a" {
-  subnet_id      = aws_subnet.isolated_1a.id
-  route_table_id = aws_route_table.isolated.id
+  count          = var.use_localstack ? 0 : 1
+  subnet_id      = aws_subnet.isolated_1a[0].id
+  route_table_id = aws_route_table.isolated[0].id
 }
 
 resource "aws_route_table_association" "isolated_1c" {
-  subnet_id      = aws_subnet.isolated_1c.id
-  route_table_id = aws_route_table.isolated.id
+  count          = var.use_localstack ? 0 : 1
+  subnet_id      = aws_subnet.isolated_1c[0].id
+  route_table_id = aws_route_table.isolated[0].id
 }
 
 # ==========================================
@@ -174,9 +169,10 @@ resource "aws_route_table_association" "isolated_1c" {
 
 # Placeholder SG for ECS
 resource "aws_security_group" "ecs_app" {
+  count       = var.use_localstack ? 0 : 1
   name        = "kawa-watch-ecs-app-sg-${var.environment}"
   description = "Security Group for ECS App/Worker"
-  vpc_id      = aws_vpc.main.id
+  vpc_id      = aws_vpc.main[0].id
 
   # Outbound access to internet (assuming NAT Gateway will be added later)
   egress {
@@ -193,15 +189,16 @@ resource "aws_security_group" "ecs_app" {
 
 # RDS Security Group
 resource "aws_security_group" "rds" {
+  count       = var.use_localstack ? 0 : 1
   name        = "kawa-watch-rds-sg-${var.environment}"
   description = "Security Group for RDS"
-  vpc_id      = aws_vpc.main.id
+  vpc_id      = aws_vpc.main[0].id
 
   ingress {
     from_port       = 3306
     to_port         = 3306
     protocol        = "tcp"
-    security_groups = [aws_security_group.ecs_app.id]
+    security_groups = [aws_security_group.ecs_app[0].id]
   }
 
   tags = {
@@ -214,8 +211,9 @@ resource "aws_security_group" "rds" {
 # Database (RDS MySQL)
 # ==========================================
 resource "aws_db_subnet_group" "rds" {
+  count      = var.use_localstack ? 0 : 1
   name       = "kawa-watch-db-subnet-group-${var.environment}"
-  subnet_ids = [aws_subnet.isolated_1a.id, aws_subnet.isolated_1c.id]
+  subnet_ids = [aws_subnet.isolated_1a[0].id, aws_subnet.isolated_1c[0].id]
 
   tags = {
     Name = "kawa-watch-db-subnet-group-${var.environment}"
@@ -223,6 +221,7 @@ resource "aws_db_subnet_group" "rds" {
 }
 
 resource "aws_db_instance" "main" {
+  count                 = var.use_localstack ? 0 : 1
   identifier            = "kawa-watch-db"
   engine                = "mysql"
   engine_version        = "8.0"
@@ -234,8 +233,8 @@ resource "aws_db_instance" "main" {
   username = var.db_username
   password = var.db_password
 
-  db_subnet_group_name   = aws_db_subnet_group.rds.name
-  vpc_security_group_ids = [aws_security_group.rds.id]
+  db_subnet_group_name   = aws_db_subnet_group.rds[0].name
+  vpc_security_group_ids = [aws_security_group.rds[0].id]
 
   multi_az            = false
   publicly_accessible = false

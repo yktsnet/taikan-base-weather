@@ -91,10 +91,10 @@ ALB → ECS (Laravel App) → Inertia + React
 ### Phase 1 — ローカルAWSサンドボックス統合 + 基本機能
 
 #### LocalStack / Terraform
-- [ ] LocalStack (無料版) をローカル環境 (Docker Compose) へ導入
-- [ ] LocalStack向けTerraformプロバイダ設定の追加
-- [ ] SQSキュー・S3バケットのLocalStackへのプロビジョニング (`terraform apply`)
-- [ ] Laravel / WorkerからのLocalStack SQS/S3への接続疎通確認
+- [x] LocalStack (無料版) をローカル環境 (Docker Compose) へ導入
+- [x] LocalStack向けTerraformプロバイダ設定の追加
+- [x] SQSキュー・S3バケットのLocalStackへのプロビジョニング (`terraform apply`)
+- [x] Laravel / WorkerからのLocalStack SQS/S3への接続疎通確認
 - [ ] (本番用) ECR / ECS Cluster / EventBridge / ALB 等のTerraform定義の整理
 
 #### Laravel セットアップ & 基本実装 (完了済み)
@@ -112,9 +112,9 @@ ALB → ECS (Laravel App) → Inertia + React
 ### Phase 2 — 可視化の強化 + 高トラフィック受信の最適化
 
 #### ダッシュボードの可視化強化
-- [ ] **水位推移グラフ (Chart.js / react-chartjs-2)**:
+- [x] **水位推移グラフ (Chart.js / react-chartjs-2)**:
   - 注意水位・警戒水位の境界ラインを重ねた水位・降雨量（棒・折れ線）の複合グラフ表示
-- [ ] **観測所マップ (Leaflet.js / React-Leaflet)**:
+- [x] **観測所マップ (Leaflet.js / React-Leaflet)**:
   - 地図上に10箇所の観測所をピン表示。警戒状況（normal/warning/danger等）に応じた色の動的変化
 
 #### 高トラフィックデータ受信の最適化（負荷検証 & チューニング）

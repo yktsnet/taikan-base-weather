@@ -1,1 +1,64 @@
 @import "tailwindcss";
+
+/* Leaflet Custom Marker Styles */
+.custom-pin-container {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.marker-pin-wrapper {
+    position: relative;
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.marker-pin-svg {
+    filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.3));
+    z-index: 2;
+    position: relative;
+}
+
+.marker-pulse {
+    position: absolute;
+    bottom: -2px; /* Position pulse near the pin tip */
+    left: 50%;
+    transform: translateX(-50%);
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    opacity: 0.6;
+    z-index: 1;
+    animation: marker-pulse-animation 1.8s infinite ease-out;
+}
+
+.custom-pin-container.normal .marker-pulse {
+    background-color: #10b981;
+}
+.custom-pin-container.caution .marker-pulse {
+    background-color: #f59e0b;
+}
+.custom-pin-container.warning .marker-pulse {
+    background-color: #f97316;
+}
+.custom-pin-container.danger .marker-pulse {
+    background-color: #ef4444;
+}
+.custom-pin-container.default .marker-pulse {
+    background-color: #3b82f6;
+}
+
+@keyframes marker-pulse-animation {
+    0% {
+        transform: translateX(-50%) scale(0.5);
+        opacity: 0.8;
+    }
+    100% {
+        transform: translateX(-50%) scale(2.4);
+        opacity: 0;
+    }
+}

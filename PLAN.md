@@ -88,65 +88,54 @@ ALB → ECS (Laravel App) → Inertia + React
 
 ## フェーズ
 
-### Phase 1 — インフラ + データ収集 + 基本表示
+### Phase 1 — ローカルAWSサンドボックス統合 + 基本機能
 
-#### Terraform
+#### LocalStack / Terraform
+- [ ] LocalStack (無料版) をローカル環境 (Docker Compose) へ導入
+- [ ] LocalStack向けTerraformプロバイダ設定の追加
+- [ ] SQSキュー・S3バケットのLocalStackへのプロビジョニング (`terraform apply`)
+- [ ] Laravel / WorkerからのLocalStack SQS/S3への接続疎通確認
+- [ ] (本番用) ECR / ECS Cluster / EventBridge / ALB 等のTerraform定義の整理
 
-- [x] VPC / Subnets / Security Groups
-- [x] RDS MySQL 8
-- [x] SQS (raw-events + DLQ)
-- [x] S3 (csv-archive)
-- [ ] ECR (poller / app / worker)
-- [ ] ECS Cluster (Fargate)
-- [ ] EventBridge rule (5分 → ECS Scheduled Task)
-- [ ] ALB + ACM
-- [ ] IAM roles (ECS task role / SES送信 / S3アクセス)
-
-#### Laravel セットアップ
-
+#### Laravel セットアップ & 基本実装 (完了済み)
 - [x] Laravel 12 プロジェクト作成 (Vite 8 + React 19 + Tailwind v4)
-- [x] Inertia.js + React + Vite
+- [x] Inertia.js + React + Vite の初期構成
 - [x] SQS Queue 接続設定 (aws-sdk/sqs)
 - [x] Migration 実行 (stations / water_levels / weather_records / alerts)
 - [x] Seeder: stations マスタ（関西圏 10 観測所）
-
-#### Poller (ECS Scheduled Task)
-
-- [x] 国交省水文水質 DB API クライアント実装 (ローカルモック自動生成)
-- [x] 気象庁 API クライアント実装 (ローカルモック自動生成)
-- [x] 取得データ正規化 → SQS 投入
-
-#### Queue Worker
-
-- [x] `ProcessWaterLevelEvent` Job
-- [x] `ProcessWeatherEvent` Job
-- [x] 閾値チェックロジック (station の warning/danger_level と比較)
-- [x] `AlertNotification` Mailable (SES)
-
-#### ダッシュボード (基本)
-
-- [x] 観測所一覧 (テーブル + 警戒ステータスバッジ)
-- [x] 観測所詳細 (直近水位 + 直近気象)
-- [x] アラート履歴一覧
+- [x] 擬似Pollerコマンド (`app:poll-water-level`, `app:poll-weather`) 実装
+- [x] Queue Worker (`ProcessWaterLevelEvent`, `ProcessWeatherEvent`) とメール通知実装
+- [x] ダッシュボード基本画面 (一覧、詳細、アラート履歴)
 
 ---
 
-### Phase 2 — ダッシュボード充実 + 運用機能
+### Phase 2 — 可視化の強化 + 高トラフィック受信の最適化
 
-- [ ] 水位推移グラフ (Chart.js、警戒水位ライン付き)
-- [ ] 降雨量重ね表示 (棒グラフ + 折れ線)
-- [ ] 観測所マップ (Leaflet.js、ステータス別ピン色)
-- [ ] S3 CSV 日次アーカイブ + ダウンロードリンク
-- [ ] 閾値カスタマイズ画面 (Inertia admin ページ)
-- [ ] CI/CD (GitHub Actions → ECR push → ECS rolling deploy)
-- [ ] Laravel Horizon (Queue 監視 UI)
+#### ダッシュボードの可視化強化
+- [ ] **水位推移グラフ (Chart.js / react-chartjs-2)**:
+  - 注意水位・警戒水位の境界ラインを重ねた水位・降雨量（棒・折れ線）の複合グラフ表示
+- [ ] **観測所マップ (Leaflet.js / React-Leaflet)**:
+  - 地図上に10箇所の観測所をピン表示。警戒状況（normal/warning/danger等）に応じた色の動的変化
+
+#### 高トラフィックデータ受信の最適化（負荷検証 & チューニング）
+- [ ] **負荷テスト用Pollerコマンドの追加**:
+  - 数千〜数万件規模の擬似センサーイベントを瞬時にSQSへ一括投入する機能の実装
+- [ ] **Queue Workerのバルク処理化**:
+  - メッセージ受信・処理時のデータベース保存をバルクインサートに変更し、DBへのI/O負荷を低減する
+- [ ] **マルチプロセスWorkerとデータ整合性の担保**:
+  - Workerをマルチプロセスで並行起動した際の処理効率化と、同一観測所データの同時書き込みにおけるデッドロック回避（トランザクションとDBロックの最適化）
+
+#### 運用機能
+- [ ] **S3 CSV日次アーカイブ**:
+  - 前日の水位データを日次バッチで自動CSV化し、LocalStack S3バケットへアップロード＆ダッシュボードからダウンロード可能にする機能
+- [ ] **Laravel Horizon (Queue 監視 UI) の導入**:
+  - 大量ジョブ実行時のキューの滞留状況を可視化・監視する
 
 ---
 
-## 未決事項
+## 未決事項・設計判断
 
-- [x] 国交省 API: 公式API非存在・スクレイピング規制のため、Poller内でのダミーデータ生成（現在時刻に基づき自動変動）を採用。
-- [x] 気象庁 API: 非公式エンドポイントの不安定性を考慮し、一旦水位同様のモックデータ生成を採用。必要に応じて無料の Open-Meteo API を利用。
-- [x] リポジトリ名決定: `kawa-watch`
-- [x] AWS リージョン: ap-northeast-1 (東京) 固定で進める
-- [ ] Horizon の採用可否: ポートフォリオ用途ならあり、コスト要確認
+- [x] **AWSモックサンドボックス**: LocalStack (Community版) を採用し、SQS・S3をローカル環境でTerraformを用いて構築可能とする。これにより本番AWS移行がスムーズになる。
+- [x] **高トラフィック対策の軸**: 水位計デバイスからの「大量データ受信・非同期処理」の最適化を主軸とし、バルク処理や並列実行時の整合性確保を実装する。
+- [x] **可視化ライブラリ**: グラフは `Chart.js`、地図は `Leaflet.js` を採用。軽量で React 19 / Inertia 環境との親和性が高い。
+- [ ] **本番AWSデプロイ手順の整備**: LocalStack向け設定から本番AWS環境への切り替え検証方法をドキュメント化する。

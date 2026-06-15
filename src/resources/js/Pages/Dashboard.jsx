@@ -60,7 +60,7 @@ export default function Dashboard({ stations }) {
     };
 
     const mapCenter = stations.length > 0
-        ? [stations[0].latitude || 34.6937, stations[0].longitude || 135.5023] // Default to Osaka if no coords
+        ? [stations[0].lat || 34.6937, stations[0].lng || 135.5023] // Default to Osaka if no coords
         : [34.6937, 135.5023];
 
     return (
@@ -87,13 +87,13 @@ export default function Dashboard({ stations }) {
                                 url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
                             />
                             {stations.map(station => {
-                                if (!station.latitude || !station.longitude) return null;
+                                if (!station.lat || !station.lng) return null;
                                 const status = station.latest_water_level?.alert_status || 'default';
                                 const icon = icons[status] || icons.default;
                                 return (
                                     <Marker
                                         key={station.id}
-                                        position={[station.latitude, station.longitude]}
+                                        position={[station.lat, station.lng]}
                                         icon={icon}
                                     >
                                         <Popup>

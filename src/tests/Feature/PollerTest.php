@@ -13,8 +13,8 @@ test('water level poller runs successfully', function () {
     Http::fake([
         '*' => Http::response([
             'waterLevel' => 2.5,
-            'observationTime' => '2023-10-25 12:00:00'
-        ], 200)
+            'observationTime' => '2023-10-25 12:00:00',
+        ], 200),
     ]);
 
     $station = Station::create([
@@ -45,9 +45,9 @@ test('weather poller runs successfully', function () {
         '*.json' => Http::response([
             'TEST01' => [
                 'temp' => [25.5, 0],
-                'precipitation1h' => [0.0, 0]
-            ]
-        ], 200)
+                'precipitation1h' => [0.0, 0],
+            ],
+        ], 200),
     ]);
 
     $station = Station::create([

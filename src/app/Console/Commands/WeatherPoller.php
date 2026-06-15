@@ -15,14 +15,14 @@ class WeatherPoller extends Command
      *
      * @var string
      */
-    protected $signature = 'app:poll-weather';
+    protected $signature = 'app:poll-weather {--start=} {--end=}';
 
     /**
      * The console command description.
      *
      * @var string
      */
-    protected $description = 'Poll real weather data and send to SQS';
+    protected $description = 'Poll real weather data and send to SQS. Use --start and --end for historical backfill.';
 
     protected SqsQueueService $sqsService;
 
@@ -40,7 +40,16 @@ class WeatherPoller extends Command
      */
     public function handle()
     {
-        $this->info('Starting real weather polling...');
+        $start = $this->option('start');
+        $end = $this->option('end');
+
+        $isHistorical = $start && $end;
+
+        if ($isHistorical) {
+            $this->info("Starting historical weather polling from {$start} to {$end}...");
+        } else {
+            $this->info('Starting real weather polling...');
+        }
 
         // Fetch valid stations from the database
         $stations = Station::all();
@@ -62,26 +71,53 @@ class WeatherPoller extends Command
         foreach ($stations as $station) {
             $this->info("Fetching weather data for station {$station->code} via API...");
 
-            $apiData = $this->jmaApiService->getLatestWeather($station->code);
+            if ($isHistorical) {
+                $historicalData = $this->jmaApiService->getHistoricalWeather($station->code, $start, $end);
 
-            if ($apiData) {
-                $eventData = [
-                    'station_code' => $station->code,
-                    'observed_at' => $apiData['observed_at'],
-                    'precipitation_mm' => $apiData['precipitation_mm'] ?? 0.0,
-                    'temperature_c' => $apiData['temperature_c'] ?? null,
-                ];
+                if ($historicalData) {
+                    foreach ($historicalData as $apiData) {
+                        $eventData = [
+                            'station_code' => $station->code,
+                            'observed_at' => $apiData['observed_at'],
+                            'precipitation_mm' => $apiData['precipitation_mm'] ?? 0.0,
+                            'temperature_c' => $apiData['temperature_c'] ?? null,
+                            'skip_notification' => true,
+                        ];
 
-                $success = $this->sqsService->sendMessage($queueUrl, $eventData);
+                        $success = $this->sqsService->sendMessage($queueUrl, $eventData);
 
-                if ($success) {
-                    Log::info("Successfully polled and sent real weather data for {$station->code}");
+                        if ($success) {
+                            Log::info("Successfully polled and sent historical weather data for {$station->code} at {$apiData['observed_at']}");
+                        } else {
+                            Log::error("Failed to send historical weather data for {$station->code} to SQS");
+                        }
+                    }
                 } else {
-                    Log::error("Failed to send weather data for {$station->code} to SQS");
+                    $this->warn("No historical weather data returned for {$station->code}");
+                    Log::warning("No historical weather data returned from JmaApiService for station {$station->code}");
                 }
             } else {
-                $this->warn("No weather data returned for {$station->code}");
-                Log::warning("No weather data returned from JmaApiService for station {$station->code}");
+                $apiData = $this->jmaApiService->getLatestWeather($station->code);
+
+                if ($apiData) {
+                    $eventData = [
+                        'station_code' => $station->code,
+                        'observed_at' => $apiData['observed_at'],
+                        'precipitation_mm' => $apiData['precipitation_mm'] ?? 0.0,
+                        'temperature_c' => $apiData['temperature_c'] ?? null,
+                    ];
+
+                    $success = $this->sqsService->sendMessage($queueUrl, $eventData);
+
+                    if ($success) {
+                        Log::info("Successfully polled and sent real weather data for {$station->code}");
+                    } else {
+                        Log::error("Failed to send weather data for {$station->code} to SQS");
+                    }
+                } else {
+                    $this->warn("No weather data returned for {$station->code}");
+                    Log::warning("No weather data returned from JmaApiService for station {$station->code}");
+                }
             }
         }
 

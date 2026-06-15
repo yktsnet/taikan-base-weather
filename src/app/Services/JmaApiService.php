@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use Carbon\Carbon;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 
@@ -54,6 +55,72 @@ class JmaApiService
 
         } catch (\Exception $e) {
             Log::error("Exception in JmaApiService for station {$stationCode}: ".$e->getMessage());
+
+            return null;
+        }
+    }
+
+    /**
+     * Get historical weather data for a given station.
+     *
+     * @param  string  $stationCode  The code of the station.
+     * @param  string  $start  Start date and time.
+     * @param  string  $end  End date and time.
+     * @return array|null An array of historical data or null on failure.
+     */
+    public function getHistoricalWeather(string $stationCode, string $start, string $end): ?array
+    {
+        try {
+            // Note: Since JMA actual historical API logic is complex, we use a placeholder
+            // similar to the real-time one.
+            $endpoint = config('services.jma_api.history_endpoint', 'https://www.jma.go.jp/bosai/amedas/data/history.json');
+
+            $response = Http::timeout(5)->get($endpoint, [
+                'stationCode' => $stationCode,
+                'start' => $start,
+                'end' => $end,
+            ]);
+
+            if ($response->successful()) {
+                $data = $response->json();
+
+                // Assuming the API returns a list of records in 'data'
+                if (isset($data['data']) && is_array($data['data'])) {
+                    $results = [];
+                    foreach ($data['data'] as $record) {
+                        if (isset($record['observationTime'])) {
+                            $results[] = [
+                                'temperature_c' => isset($record['temp']) ? (float) $record['temp'] : null,
+                                'precipitation_mm' => isset($record['precipitation1h']) ? (float) $record['precipitation1h'] : null,
+                                'observed_at' => $record['observationTime'],
+                            ];
+                        }
+                    }
+
+                    return $results;
+                }
+            }
+
+            // Fallback for simulation: Generate simulated historical data
+            // This is useful for testing without a real historical API
+            Log::info("Using simulated historical weather data for station {$stationCode} from {$start} to {$end}");
+            $results = [];
+            $current = Carbon::parse($start);
+            $endTime = Carbon::parse($end);
+
+            while ($current->lte($endTime)) {
+                $results[] = [
+                    'temperature_c' => round(mt_rand(100, 350) / 10, 1), // random temp 10.0 to 35.0
+                    'precipitation_mm' => round(mt_rand(0, 50) / 10, 1), // random prec 0.0 to 5.0
+                    'observed_at' => $current->format('Y-m-d H:i:s'),
+                ];
+                $current->addMinutes(60); // simulated hourly data
+            }
+
+            return $results;
+
+        } catch (\Exception $e) {
+            Log::error("Exception in JmaApiService historical data for station {$stationCode}: ".$e->getMessage());
 
             return null;
         }

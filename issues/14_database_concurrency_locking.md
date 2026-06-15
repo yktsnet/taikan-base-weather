@@ -3,7 +3,7 @@ id: 14
 skill: pr-workflow
 branch-slug: database-concurrency-locking
 github_issue:
-status: open
+status: close
 type: feat
 対象: src/app/Jobs/ProcessWaterLevelEvent.php (変更), src/app/Jobs/ProcessWeatherEvent.php (変更)
 内容: Queue Workerがマルチプロセスで並行起動した際、同一観測所のデータ書き込みやアラート超過判定において、データの不整合やDBデッドロックが発生するのを防ぐために、トランザクションと適切なDBロック（行ロック）を実装する。

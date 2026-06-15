@@ -48,8 +48,9 @@ class ProcessWaterLevelEvent implements ShouldQueue
 
         $insertedAlertsIds = [];
         $stationsForMail = null;
+        $skipNotificationFlags = [];
 
-        DB::transaction(function () use (&$insertedAlertsIds, &$stationsForMail) {
+        DB::transaction(function () use (&$insertedAlertsIds, &$stationsForMail, &$skipNotificationFlags) {
             $stationCodes = array_column($this->data, 'station_code');
             $stations = Station::whereIn('code', $stationCodes)->lockForUpdate()->get()->keyBy('code');
             $stationsForMail = $stations;
@@ -92,6 +93,8 @@ class ProcessWaterLevelEvent implements ShouldQueue
                     'updated_at' => $now,
                 ];
 
+                $skipNotification = isset($event['skip_notification']) && $event['skip_notification'] === true;
+
                 if (in_array($alertStatus, ['caution', 'warning', 'danger'])) {
                     // Check if an alert already exists to prevent duplicates
                     $exists = Alert::where('station_id', $station->id)
@@ -114,7 +117,7 @@ class ProcessWaterLevelEvent implements ShouldQueue
                             'triggered_at' => $event['observed_at'],
                             'level' => $alertStatus,
                             'level_m' => $level,
-                            'notified' => false,
+                            'notified' => false, // Initial value
                             'created_at' => $now,
                             'updated_at' => $now,
                         ];
@@ -124,6 +127,10 @@ class ProcessWaterLevelEvent implements ShouldQueue
                             'triggered_at' => $event['observed_at'],
                             'level' => $alertStatus,
                         ];
+
+                        // Create an array key using station_id and triggered_at to link flag
+                        $key = "{$station->id}_{$event['observed_at']}_{$alertStatus}";
+                        $skipNotificationFlags[$key] = $skipNotification;
                     }
                 }
             }
@@ -145,7 +152,18 @@ class ProcessWaterLevelEvent implements ShouldQueue
                     }
                 })->get();
 
-                $insertedAlertsIds = $insertedAlerts->pluck('id')->toArray();
+                foreach ($insertedAlerts as $alert) {
+                    $key = "{$alert->station_id}_{$alert->triggered_at}_{$alert->level}";
+                    $skip = isset($skipNotificationFlags[$key]) && $skipNotificationFlags[$key] === true;
+
+                    if ($skip) {
+                        // Mark as notified in DB so we never try to process it later
+                        Alert::where('id', $alert->id)->update(['notified' => true]);
+                    } else {
+                        // Keep for sending email outside transaction
+                        $insertedAlertsIds[] = $alert->id;
+                    }
+                }
             }
         });
 

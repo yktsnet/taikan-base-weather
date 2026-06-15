@@ -3,7 +3,7 @@ id: 17a
 skill: pr-workflow
 branch-slug: investigate-sqs-message-flow
 github_issue:
-status: open
+status: close
 type: feat
 対象: issues/done/17a_investigate-sqs-message-flow_pr.md (新規)
 内容: `app:bulk-queue-worker --once` コマンドを実行してもSQS（LocalStack）上のメッセージが一切処理されない問題について、ソースコード上のAWSクライアント接続設定や、Pollerコマンド送信時のエラー詳細ログを徹底的に調査し、原因および具体的な修正方針をレポート（調査報告書）としてまとめる。コードの修正（ファイル編集）は一切行わないこと。

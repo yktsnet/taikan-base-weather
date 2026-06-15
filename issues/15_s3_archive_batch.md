@@ -3,7 +3,7 @@ id: 15
 skill: pr-workflow
 branch-slug: s3-archive-batch
 github_issue:
-status: open
+status: close
 type: feat
 対象: src/app/Console/Commands/ArchiveWaterLevelToS3.php (新規), src/config/filesystems.php (変更), src/.env.example (変更), src/.env.docker (変更)
 内容: 前日の水位データを日次バッチで自動CSV化し、LocalStackのS3バケットへアップロードするArtisanコマンドを実装する。将来的なS3ダウンロード機能のバックエンド基盤となる。

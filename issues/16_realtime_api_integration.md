@@ -3,7 +3,7 @@ id: 16
 skill: pr-workflow
 branch-slug: realtime-api-integration
 github_issue:
-status: open
+status: close
 type: feat
 対象: src/app/Services/RiverApiService.php (新規), src/app/Services/JmaApiService.php (新規), src/app/Console/Commands/WaterLevelPoller.php (変更), src/app/Console/Commands/WeatherPoller.php (変更)
 内容: 現在モックデータを生成しているデータ取得コマンドを改修し、国交省（川の防災情報など）および気象庁（アメダスなど）の実データAPIから実際の水位・気象情報を取得してSQSに送信するように切り替える。

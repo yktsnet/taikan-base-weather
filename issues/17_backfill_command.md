@@ -3,7 +3,7 @@ id: 17
 skill: pr-workflow
 branch-slug: backfill-command
 github_issue:
-status: open
+status: close
 type: feat
 対象: src/app/Console/Commands/WaterLevelPoller.php (変更), src/app/Console/Commands/WeatherPoller.php (変更), src/app/Jobs/ProcessWaterLevelEvent.php (変更)
 内容: 過去の特定期間のデータを取得してSQSへ一括投入する「バックフィル」機能をPollerに追加する。また、過去のデータ処理時に大量のアラートメール通知（SES）が誤送信されるのを防ぐため、SQSイベントへのスキップフラグ追加とJob側での通知抑制ロジックを実装する。

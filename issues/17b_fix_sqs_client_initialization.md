@@ -3,7 +3,7 @@ id: 17b
 skill: pr-workflow
 branch-slug: fix-sqs-client-initialization
 github_issue:
-status: open
+status: close
 type: fix
 対象: src/app/Services/SqsQueueService.php
 内容: `SqsQueueService.php` のコンストラクタ内で、AWS `SqsClient` を初期化する際に `endpoint` と `credentials`（認証情報）が正しく渡されるように修正し、LocalStack（ローカルSQS環境）へのメッセージ送受信が正常に行われるようにする。

@@ -39,7 +39,7 @@ class SqsQueueService
                 $entries = [];
                 foreach ($chunk as $index => $messageData) {
                     $entries[] = [
-                        'Id' => 'msg_' . $chunkIndex . '_' . $index . '_' . uniqid(),
+                        'Id' => 'msg_'.$chunkIndex.'_'.$index.'_'.uniqid(),
                         'MessageBody' => json_encode($messageData, JSON_UNESCAPED_UNICODE),
                     ];
                 }
@@ -49,7 +49,7 @@ class SqsQueueService
                     'Entries' => $entries,
                 ]);
 
-                if (!empty($result->get('Failed'))) {
+                if (! empty($result->get('Failed'))) {
                     $allSuccessful = false;
                     Log::error('Failed to send some messages in batch to SQS.', [
                         'queueUrl' => $queueUrl,

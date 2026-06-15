@@ -10,6 +10,7 @@ use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 
 class ProcessWeatherEvent implements ShouldQueue
@@ -42,33 +43,35 @@ class ProcessWeatherEvent implements ShouldQueue
             return;
         }
 
-        $stationCodes = array_column($this->data, 'station_code');
-        $stations = Station::whereIn('code', $stationCodes)->get()->keyBy('code');
+        DB::transaction(function () {
+            $stationCodes = array_column($this->data, 'station_code');
+            $stations = Station::whereIn('code', $stationCodes)->lockForUpdate()->get()->keyBy('code');
 
-        $recordsToInsert = [];
-        $now = Carbon::now();
+            $recordsToInsert = [];
+            $now = Carbon::now();
 
-        foreach ($this->data as $event) {
-            $station = $stations->get($event['station_code']);
+            foreach ($this->data as $event) {
+                $station = $stations->get($event['station_code']);
 
-            if (! $station) {
-                Log::warning("Station not found for code: {$event['station_code']}");
+                if (! $station) {
+                    Log::warning("Station not found for code: {$event['station_code']}");
 
-                continue;
+                    continue;
+                }
+
+                $recordsToInsert[] = [
+                    'station_id' => $station->id,
+                    'observed_at' => $event['observed_at'],
+                    'precipitation_mm' => $event['precipitation_mm'],
+                    'temperature_c' => $event['temperature_c'],
+                    'created_at' => $now,
+                    'updated_at' => $now,
+                ];
             }
 
-            $recordsToInsert[] = [
-                'station_id' => $station->id,
-                'observed_at' => $event['observed_at'],
-                'precipitation_mm' => $event['precipitation_mm'],
-                'temperature_c' => $event['temperature_c'],
-                'created_at' => $now,
-                'updated_at' => $now,
-            ];
-        }
-
-        if (! empty($recordsToInsert)) {
-            WeatherRecord::insert($recordsToInsert);
-        }
+            if (! empty($recordsToInsert)) {
+                WeatherRecord::insert($recordsToInsert);
+            }
+        });
     }
 }

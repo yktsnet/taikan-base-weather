@@ -17,6 +17,20 @@ class JmaApiService
     public function getLatestWeather(string $stationCode): ?array
     {
         try {
+            $mapping = [
+                'ST001' => '62056', // 枚方
+                'ST002' => '62078', // 大阪（守口最寄り）
+                'ST003' => '61286', // 京都（宇治最寄り）
+                'ST004' => '61286', // 京都（桂川最寄り）
+                'ST005' => '62096', // 八尾（柏原最寄り）
+                'ST006' => '64036', // 奈良（王寺最寄り）
+                'ST007' => '62021', // 三田（宝塚最寄り）
+                'ST008' => '62078', // 大阪（尼崎最寄り）
+                'ST009' => '64081', // 五條
+                'ST010' => '65022', // 和歌山
+            ];
+            $amedasCode = $mapping[$stationCode] ?? $stationCode;
+
             // JMA (Japan Meteorological Agency) API endpoint for AMeDAS data.
             // Example real endpoint: https://www.jma.go.jp/bosai/amedas/data/map/YYYYMMDDHH0000.json
             // We use a configured endpoint or a placeholder.
@@ -36,9 +50,8 @@ class JmaApiService
                     $data = $dataResponse->json();
 
                     // The JMA API uses station codes as keys in the JSON response
-                    // Here we assume $stationCode maps to the AMeDAS code.
-                    if (isset($data[$stationCode])) {
-                        $stationData = $data[$stationCode];
+                    if (isset($data[$amedasCode])) {
+                        $stationData = $data[$amedasCode];
 
                         return [
                             'temperature_c' => isset($stationData['temp'][0]) ? (float) $stationData['temp'][0] : null,

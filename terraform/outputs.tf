@@ -1,26 +1,26 @@
 output "vpc_id" {
   description = "The ID of the VPC"
-  value       = aws_vpc.main.id
+  value       = one(aws_vpc.main[*].id)
 }
 
 output "public_subnet_ids" {
   description = "The IDs of the public subnets"
-  value       = [aws_subnet.public_1a.id, aws_subnet.public_1c.id]
+  value       = concat(aws_subnet.public_1a[*].id, aws_subnet.public_1c[*].id)
 }
 
 output "private_subnet_ids" {
   description = "The IDs of the private subnets"
-  value       = [aws_subnet.private_1a.id, aws_subnet.private_1c.id]
+  value       = concat(aws_subnet.private_1a[*].id, aws_subnet.private_1c[*].id)
 }
 
 output "isolated_subnet_ids" {
   description = "The IDs of the isolated subnets"
-  value       = [aws_subnet.isolated_1a.id, aws_subnet.isolated_1c.id]
+  value       = concat(aws_subnet.isolated_1a[*].id, aws_subnet.isolated_1c[*].id)
 }
 
 output "rds_endpoint" {
   description = "The endpoint for the RDS instance"
-  value       = aws_db_instance.main.endpoint
+  value       = one(aws_db_instance.main[*].endpoint)
 }
 
 output "sqs_main_queue_url" {
@@ -40,5 +40,5 @@ output "s3_csv_archive_bucket" {
 
 output "ecs_app_sg_id" {
   description = "The ID of the Security Group for ECS App/Worker"
-  value       = aws_security_group.ecs_app.id
+  value       = one(aws_security_group.ecs_app[*].id)
 }

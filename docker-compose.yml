@@ -51,7 +51,7 @@ services:
       MP_SMTP_AUTH_ALLOW_INSECURE: 1
 
   localstack:
-    image: localstack/localstack
+    image: localstack/localstack:3.0
     container_name: kawa-watch-localstack
     restart: unless-stopped
     ports:

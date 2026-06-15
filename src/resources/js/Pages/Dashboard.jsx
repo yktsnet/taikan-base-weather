@@ -4,30 +4,43 @@ import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
 import L from 'leaflet';
 
-// Leaflet default icon fix
-delete L.Icon.Default.prototype._getIconUrl;
-L.Icon.Default.mergeOptions({
-    iconRetinaUrl: '/images/marker-icon-2x.png',
-    iconUrl: '/images/marker-icon.png',
-    shadowUrl: '/images/marker-shadow.png',
-});
+// Custom markers based on status using L.divIcon and SVG
+const createMarkerIcon = (status) => {
+    const colorClasses = {
+        normal: 'text-emerald-500',
+        caution: 'text-amber-500',
+        warning: 'text-orange-500',
+        danger: 'text-red-500',
+        default: 'text-blue-500',
+    };
+    const colorClass = colorClasses[status] || colorClasses.default;
 
-// Custom icons based on status
-const createIcon = (color) => new L.Icon({
-    iconUrl: `/images/marker-icon-2x-${color}.png`,
-    shadowUrl: '/images/marker-shadow.png',
-    iconSize: [25, 41],
-    iconAnchor: [12, 41],
-    popupAnchor: [1, -34],
-    shadowSize: [41, 41]
-});
+    // Pulse animation element is added for non-normal statuses to emphasize urgency
+    const pulseHtml = status !== 'normal' ? '<div class="marker-pulse"></div>' : '';
+
+    return L.divIcon({
+        className: `custom-pin-container ${status || 'default'}`,
+        html: `
+            <div class="marker-pin-wrapper">
+                ${pulseHtml}
+                <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="currentColor" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="marker-pin-svg ${colorClass}">
+                    <path d="M20 10c0 4.993-5.539 10.193-7.399 11.799a1 1 0 0 1-1.202 0C9.539 20.193 4 14.993 4 10a8 8 0 0 1 16 0"/>
+                    <circle cx="12" cy="10" r="3" fill="white"/>
+                </svg>
+            </div>
+        `,
+        iconSize: [32, 32],
+        iconAnchor: [16, 32],
+        popupAnchor: [0, -32],
+    });
+};
 
 const icons = {
-    normal: createIcon('green'),
-    caution: createIcon('yellow'),
-    warning: createIcon('orange'),
-    danger: createIcon('red'),
-    default: createIcon('blue')
+    normal: createMarkerIcon('normal'),
+    caution: createMarkerIcon('caution'),
+    warning: createMarkerIcon('warning'),
+    danger: createMarkerIcon('danger'),
+    default: createMarkerIcon('default')
 };
 
 export default function Dashboard({ stations }) {

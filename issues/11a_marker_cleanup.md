@@ -3,7 +3,7 @@ id: 11a
 skill: pr-workflow
 branch-slug: marker-cleanup
 github_issue:
-status: open
+status: close
 type: feat
 対象: src/resources/js/Pages/Dashboard.jsx (変更), src/public/images/ (削除)
 内容: 地図上のピン（マーカー）の表示を、PNG画像からCSS/SVG（Lucide React等）を用いたカスタムマーカー（L.divIcon）に置き換え、不要になったPNG画像ファイルをリポジトリから削除する。

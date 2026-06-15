@@ -1,4 +1,6 @@
 <?php
+$content = <<<'EOT'
+<?php
 
 namespace App\Jobs;
 
@@ -53,7 +55,6 @@ class ProcessWeatherEvent implements ShouldQueue
 
             if (! $station) {
                 Log::warning("Station not found for code: {$event['station_code']}");
-
                 continue;
             }
 
@@ -67,8 +68,11 @@ class ProcessWeatherEvent implements ShouldQueue
             ];
         }
 
-        if (! empty($recordsToInsert)) {
+        if (!empty($recordsToInsert)) {
             WeatherRecord::insert($recordsToInsert);
         }
     }
 }
+EOT;
+
+file_put_contents('src/app/Jobs/ProcessWeatherEvent.php', $content);

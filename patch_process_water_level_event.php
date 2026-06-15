@@ -1,4 +1,6 @@
 <?php
+$content = <<<'EOT'
+<?php
 
 namespace App\Jobs;
 
@@ -60,7 +62,6 @@ class ProcessWaterLevelEvent implements ShouldQueue
 
             if (! $station) {
                 Log::warning("Station not found for code: {$event['station_code']}");
-
                 continue;
             }
 
@@ -106,11 +107,11 @@ class ProcessWaterLevelEvent implements ShouldQueue
             }
         }
 
-        if (! empty($waterLevelsToInsert)) {
+        if (!empty($waterLevelsToInsert)) {
             WaterLevel::insert($waterLevelsToInsert);
         }
 
-        if (! empty($alertsToInsert)) {
+        if (!empty($alertsToInsert)) {
             Alert::insert($alertsToInsert);
 
             // Fetch the newly inserted alerts to send emails.
@@ -120,8 +121,8 @@ class ProcessWaterLevelEvent implements ShouldQueue
             foreach ($alertsInfo as $info) {
                 $alertQuery->orWhere(function ($query) use ($info) {
                     $query->where('station_id', $info['station']->id)
-                        ->where('triggered_at', $info['triggered_at'])
-                        ->where('level', $info['level']);
+                          ->where('triggered_at', $info['triggered_at'])
+                          ->where('level', $info['level']);
                 });
             }
             $insertedAlerts = $alertQuery->where('notified', false)->get();
@@ -140,9 +141,12 @@ class ProcessWaterLevelEvent implements ShouldQueue
                 }
             }
 
-            if (! empty($alertsToUpdate)) {
+            if (!empty($alertsToUpdate)) {
                 Alert::whereIn('id', $alertsToUpdate)->update(['notified' => true]);
             }
         }
     }
 }
+EOT;
+
+file_put_contents('src/app/Jobs/ProcessWaterLevelEvent.php', $content);

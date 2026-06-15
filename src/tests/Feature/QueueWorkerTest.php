@@ -29,7 +29,7 @@ test('queue worker runs correctly for danger level', function () {
         'observed_at' => '2023-01-01 12:00:00',
     ];
 
-    $job = new ProcessWaterLevelEvent($data);
+    $job = new ProcessWaterLevelEvent([$data]);
     $job->handle();
 
     $this->assertDatabaseHas('water_levels', [
@@ -69,7 +69,7 @@ test('queue worker runs correctly for warning level', function () {
         'observed_at' => '2023-01-01 12:00:00',
     ];
 
-    $job = new ProcessWaterLevelEvent($data);
+    $job = new ProcessWaterLevelEvent([$data]);
     $job->handle();
 
     $this->assertDatabaseHas('water_levels', [
@@ -107,7 +107,7 @@ test('queue worker runs correctly for caution level', function () {
         'observed_at' => '2023-01-01 12:00:00',
     ];
 
-    $job = new ProcessWaterLevelEvent($data);
+    $job = new ProcessWaterLevelEvent([$data]);
     $job->handle();
 
     $this->assertDatabaseHas('water_levels', [
@@ -145,7 +145,7 @@ test('queue worker runs correctly for normal level', function () {
         'observed_at' => '2023-01-01 12:00:00',
     ];
 
-    $job = new ProcessWaterLevelEvent($data);
+    $job = new ProcessWaterLevelEvent([$data]);
     $job->handle();
 
     $this->assertDatabaseHas('water_levels', [
@@ -178,7 +178,7 @@ test('weather queue worker runs correctly', function () {
         'observed_at' => '2023-01-01 12:00:00',
     ];
 
-    $job = new ProcessWeatherEvent($data);
+    $job = new ProcessWeatherEvent([$data]);
     $job->handle();
 
     $this->assertDatabaseHas('weather_records', [

@@ -45,6 +45,7 @@ class LoadTestPoller extends Command
 
         if (empty($stations)) {
             $this->error('No stations found in the database. Cannot generate data.');
+
             return;
         }
 
@@ -53,11 +54,13 @@ class LoadTestPoller extends Command
 
         if (($type === 'water' || $type === 'all') && empty($waterQueueUrl)) {
             $this->error('Water level SQS queue URL is not configured.');
+
             return;
         }
 
         if (($type === 'weather' || $type === 'all') && empty($weatherQueueUrl)) {
             $this->error('Weather SQS queue URL is not configured.');
+
             return;
         }
 
@@ -119,13 +122,13 @@ class LoadTestPoller extends Command
         }
 
         // Send remaining messages
-        if (!empty($waterMessages)) {
+        if (! empty($waterMessages)) {
             if ($this->sqsService->sendMessageBatch($waterQueueUrl, $waterMessages)) {
                 $totalSent += count($waterMessages);
             }
         }
 
-        if (!empty($weatherMessages)) {
+        if (! empty($weatherMessages)) {
             if ($this->sqsService->sendMessageBatch($weatherQueueUrl, $weatherMessages)) {
                 $totalSent += count($weatherMessages);
             }
@@ -136,7 +139,7 @@ class LoadTestPoller extends Command
         $messagesPerSecond = $duration > 0 ? $totalSent / $duration : 0;
 
         $this->info(sprintf(
-            "Load test completed! Sent %d messages in %.2f seconds (%.2f messages/second).",
+            'Load test completed! Sent %d messages in %.2f seconds (%.2f messages/second).',
             $totalSent,
             $duration,
             $messagesPerSecond

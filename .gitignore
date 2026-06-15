@@ -61,3 +61,6 @@ src/database/*.sqlite
 src/database/*.sqlite-journal
 src/database/*.sqlite-shm
 src/database/*.sqlite-wal
+
+# SV6 Hosting Docs
+docs/sv6-hosting-todo.md

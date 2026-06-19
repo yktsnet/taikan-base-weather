@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\Auth\LoginController;
+use App\Http\Controllers\Admin\VerificationController;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
@@ -22,4 +23,8 @@ Route::middleware('auth')->prefix('admin')->group(function () {
     Route::get('/verification', function () {
         return Inertia::render('Admin/Verification');
     })->name('admin.verification');
+
+    // Verification APIs
+    Route::post('/api/load-test', [VerificationController::class, 'loadTest'])->name('admin.api.load_test');
+    Route::get('/api/metrics', [VerificationController::class, 'getMetrics'])->name('admin.api.metrics');
 });

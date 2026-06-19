@@ -231,4 +231,50 @@ class SqsQueueService
             return false;
         }
     }
+
+    /**
+     * Get queue attributes (specifically message counts).
+     *
+     * @param  string  $queueUrl  The URL of the SQS queue.
+     * @return array Array with 'pending' and 'in_flight' message counts.
+     */
+    public function getQueueAttributes(string $queueUrl): array
+    {
+        try {
+            $result = $this->client->getQueueAttributes([
+                'QueueUrl' => $queueUrl,
+                'AttributeNames' => [
+                    'ApproximateNumberOfMessages',
+                    'ApproximateNumberOfMessagesNotVisible',
+                ],
+            ]);
+
+            $attributes = $result->get('Attributes') ?? [];
+
+            return [
+                'pending' => isset($attributes['ApproximateNumberOfMessages']) ? (int) $attributes['ApproximateNumberOfMessages'] : 0,
+                'in_flight' => isset($attributes['ApproximateNumberOfMessagesNotVisible']) ? (int) $attributes['ApproximateNumberOfMessagesNotVisible'] : 0,
+            ];
+        } catch (AwsException $e) {
+            Log::error('Failed to get queue attributes from SQS.', [
+                'queueUrl' => $queueUrl,
+                'error' => $e->getMessage(),
+            ]);
+
+            return [
+                'pending' => 0,
+                'in_flight' => 0,
+            ];
+        } catch (\Exception $e) {
+            Log::error('Unexpected error getting queue attributes from SQS.', [
+                'queueUrl' => $queueUrl,
+                'error' => $e->getMessage(),
+            ]);
+
+            return [
+                'pending' => 0,
+                'in_flight' => 0,
+            ];
+        }
+    }
 }

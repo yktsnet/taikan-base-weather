@@ -3,7 +3,7 @@ id: 19
 skill: pr-workflow
 branch-slug: admin-verification-api
 github_issue:
-status: open
+status: close
 type: feat
 対象: src/app/Services/SqsQueueService.php (変更), src/app/Http/Controllers/Admin/VerificationController.php (新規), src/routes/web.php (変更)
 内容: 検証画面（管理者用パネル）から負荷テストをトリガーし、キューの滞留状況を監視するためのバックエンド API を実装します。

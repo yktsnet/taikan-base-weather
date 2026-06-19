@@ -54,21 +54,21 @@ export default function Verification() {
     };
 
     return (
-        <div className="min-h-screen bg-gray-100 text-gray-900 font-sans">
+        <div className="min-h-screen bg-gray-100 py-8 text-gray-900 font-sans">
             <Head title="検証モード" />
 
-            {/* Header */}
-            <header className="bg-white border-b border-gray-200 shadow-sm sticky top-0 z-50">
-                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex justify-between items-center">
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                {/* Header (Aligned with Dashboard layout) */}
+                <div className="flex justify-between items-center mb-6">
                     <div className="flex items-center space-x-3">
                         <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-indigo-600">
                             <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
                         </svg>
-                        <h1 className="text-2xl font-bold tracking-tight text-gray-900 flex items-center">
-                            kawa-watch <span className="ml-2 text-xs font-semibold px-2 py-0.5 rounded bg-indigo-100 text-indigo-800">管理者検証パネル</span>
+                        <h1 className="text-3xl font-bold text-gray-900 flex items-center">
+                            kawa-watch <span className="ml-3 text-xs font-semibold px-2.5 py-1 rounded-full bg-indigo-100 text-indigo-800">管理者検証パネル</span>
                         </h1>
                     </div>
-                    <div className="flex items-center space-x-4">
+                    <div className="flex space-x-3">
                         <Link
                             href="/"
                             className="px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 transition"
@@ -85,9 +85,6 @@ export default function Verification() {
                         </Link>
                     </div>
                 </div>
-            </header>
-
-            <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
                     
                     {/* Column 1: Load Test Controller */}
@@ -296,7 +293,7 @@ export default function Verification() {
                     </div>
 
                 </div>
-            </main>
+            </div>
         </div>
     );
 }

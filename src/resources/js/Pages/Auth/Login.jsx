@@ -16,28 +16,28 @@ export default function Login() {
     };
 
     return (
-        <div className="min-h-screen flex flex-col justify-center py-12 sm:px-6 lg:px-8 bg-slate-900">
+        <div className="min-h-screen flex flex-col justify-center py-12 sm:px-6 lg:px-8 bg-gray-100">
             <Head title="管理者ログイン" />
 
             <div className="sm:mx-auto sm:w-full sm:max-w-md">
                 <div className="flex justify-center">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-blue-500 animate-pulse">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-indigo-600 animate-pulse">
                         <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
                     </svg>
                 </div>
-                <h2 className="mt-6 text-center text-3xl font-extrabold text-white tracking-tight">
+                <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900 tracking-tight">
                     kawa-watch
                 </h2>
-                <p className="mt-2 text-center text-sm text-slate-400">
+                <p className="mt-2 text-center text-sm text-gray-600">
                     システム管理者用ログインパネル
                 </p>
             </div>
 
             <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
-                <div className="bg-slate-800 py-8 px-4 shadow sm:rounded-lg sm:px-10 border border-slate-700">
+                <div className="bg-white py-8 px-4 shadow sm:rounded-lg sm:px-10 border border-gray-200">
                     <form className="space-y-6" onSubmit={handleSubmit}>
                         <div>
-                            <label htmlFor="email" className="block text-sm font-medium text-slate-300">
+                            <label htmlFor="email" className="block text-sm font-medium text-gray-700">
                                 メールアドレス
                             </label>
                             <div className="mt-1">
@@ -49,18 +49,18 @@ export default function Login() {
                                     required
                                     value={data.email}
                                     onChange={(e) => setData('email', e.target.value)}
-                                    className="appearance-none block w-full px-3 py-2 border border-slate-600 rounded-md shadow-sm placeholder-slate-400 bg-slate-700 text-white focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                                    className="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 bg-white text-gray-900 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
                                 />
                             </div>
                             {errors.email && (
-                                <p className="mt-2 text-sm text-red-500 font-medium">
+                                <p className="mt-2 text-sm text-red-600 font-medium">
                                     {errors.email}
                                 </p>
                             )}
                         </div>
 
                         <div>
-                            <label htmlFor="password" className="block text-sm font-medium text-slate-300">
+                            <label htmlFor="password" className="block text-sm font-medium text-gray-700">
                                 パスワード
                             </label>
                             <div className="mt-1">
@@ -72,11 +72,11 @@ export default function Login() {
                                     required
                                     value={data.password}
                                     onChange={(e) => setData('password', e.target.value)}
-                                    className="appearance-none block w-full px-3 py-2 border border-slate-600 rounded-md shadow-sm placeholder-slate-400 bg-slate-700 text-white focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                                    className="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 bg-white text-gray-900 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
                                 />
                             </div>
                             {errors.password && (
-                                <p className="mt-2 text-sm text-red-500 font-medium">
+                                <p className="mt-2 text-sm text-red-600 font-medium">
                                     {errors.password}
                                 </p>
                             )}
@@ -90,9 +90,9 @@ export default function Login() {
                                     type="checkbox"
                                     checked={data.remember}
                                     onChange={(e) => setData('remember', e.target.checked)}
-                                    className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-slate-600 rounded bg-slate-750"
+                                    className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded bg-white cursor-pointer"
                                 />
-                                <label htmlFor="remember" className="ml-2 block text-sm text-slate-300">
+                                <label htmlFor="remember" className="ml-2 block text-sm text-gray-700 cursor-pointer">
                                     ログイン状態を維持
                                 </label>
                             </div>
@@ -102,7 +102,7 @@ export default function Login() {
                             <button
                                 type="submit"
                                 disabled={processing}
-                                className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
+                                className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
                             >
                                 {processing ? 'ログイン中...' : 'ログイン'}
                             </button>
@@ -110,20 +110,20 @@ export default function Login() {
                     </form>
 
                     {/* Demo Account Notice */}
-                    <div className="mt-6 p-4 bg-slate-700/50 border border-slate-600 rounded-md text-xs text-slate-300">
-                        <p className="font-semibold text-blue-400 mb-2 flex items-center">
+                    <div className="mt-6 p-4 bg-blue-50 border border-blue-100 rounded-md text-xs text-blue-800">
+                        <p className="font-semibold text-indigo-700 mb-2 flex items-center">
                             <span className="mr-1">💡</span> デモ用管理者アカウント
                         </p>
                         <p className="mb-1">
-                            メールアドレス: <code className="bg-slate-700 px-1.5 py-0.5 rounded text-white select-all">admin@example.com</code>
+                            メールアドレス: <code className="bg-blue-100 px-1.5 py-0.5 rounded text-blue-900 select-all font-mono">admin@example.com</code>
                         </p>
                         <p>
-                            パスワード: <code className="bg-slate-700 px-1.5 py-0.5 rounded text-white select-all">password</code>
+                            パスワード: <code className="bg-blue-100 px-1.5 py-0.5 rounded text-blue-900 select-all font-mono">password</code>
                         </p>
                     </div>
 
                     <div className="mt-6 flex justify-center">
-                        <Link href="/" className="text-sm font-medium text-slate-400 hover:text-slate-300">
+                        <Link href="/" className="text-sm font-medium text-gray-500 hover:text-gray-700 transition">
                             ← 一般ダッシュボードに戻る
                         </Link>
                     </div>

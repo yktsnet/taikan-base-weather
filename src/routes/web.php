@@ -28,4 +28,6 @@ Route::middleware('auth')->prefix('admin')->group(function () {
     Route::post('/api/load-test', [VerificationController::class, 'loadTest'])->name('admin.api.load_test');
     Route::get('/api/metrics', [VerificationController::class, 'getMetrics'])->name('admin.api.metrics');
     Route::post('/api/dlq-redrive', [VerificationController::class, 'redriveDlq'])->name('admin.api.dlq_redrive');
+    Route::get('/api/s3-archives', [VerificationController::class, 'getS3Archives'])->name('admin.api.s3_archives');
+    Route::get('/api/s3-archives/download', [VerificationController::class, 'downloadS3Archive'])->name('admin.api.s3_archive_download');
 });

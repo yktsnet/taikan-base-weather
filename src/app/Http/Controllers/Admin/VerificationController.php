@@ -10,6 +10,7 @@ use Carbon\Carbon;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Storage;
 
 class VerificationController extends Controller
 {
@@ -105,5 +106,81 @@ class VerificationController extends Controller
                 'message' => '再投入処理中にエラーが発生しました。',
             ], 500);
         }
+    }
+
+    /**
+     * Get list of S3 daily CSV archives.
+     */
+    public function getS3Archives(Request $request): JsonResponse
+    {
+        try {
+            $files = Storage::disk('s3')->allFiles('water-levels');
+            $archives = [];
+
+            foreach ($files as $file) {
+                // Skip non-csv files if any
+                if (!str_ends_with($file, '.csv')) {
+                    continue;
+                }
+
+                $sizeBytes = Storage::disk('s3')->size($file);
+                $lastModified = Storage::disk('s3')->lastModified($file);
+
+                $archives[] = [
+                    'path' => $file,
+                    'filename' => basename($file),
+                    'size' => $this->formatBytes($sizeBytes),
+                    'last_modified' => Carbon::createFromTimestamp($lastModified)->toDateTimeString(),
+                ];
+            }
+
+            // Sort by last modified descending
+            usort($archives, function ($a, $b) {
+                return strcmp($b['last_modified'], $a['last_modified']);
+            });
+
+            return response()->json($archives);
+        } catch (\Exception $e) {
+            Log::error('Failed to get S3 archives', ['error' => $e->getMessage()]);
+
+            return response()->json([
+                'status' => 'error',
+                'message' => 'アーカイブ一覧の取得に失敗しました。',
+            ], 500);
+        }
+    }
+
+    /**
+     * Download an S3 daily CSV archive via Laravel proxy.
+     */
+    public function downloadS3Archive(Request $request)
+    {
+        $request->validate([
+            'path' => ['required', 'string', 'regex:/^water-levels\/[0-9a-zA-Z_\/\.-]+\.csv$/'],
+        ]);
+
+        $path = $request->input('path');
+
+        if (!Storage::disk('s3')->exists($path)) {
+            abort(404, '指定されたアーカイブファイルが見つかりません。');
+        }
+
+        return Storage::disk('s3')->download($path);
+    }
+
+    /**
+     * Helper to format bytes to human readable form.
+     */
+    protected function formatBytes(int $bytes, int $precision = 1): string
+    {
+        $units = ['B', 'KB', 'MB', 'GB', 'TB'];
+
+        $bytes = max($bytes, 0);
+        $pow = floor(($bytes ? log($bytes) : 0) / log(1024));
+        $pow = min($pow, count($units) - 1);
+
+        $bytes /= pow(1024, $pow);
+
+        return round($bytes, $precision) . ' ' . $units[$pow];
     }
 }

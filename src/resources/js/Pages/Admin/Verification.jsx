@@ -15,6 +15,9 @@ export default function Verification() {
     const [isLoadingMetrics, setIsLoadingMetrics] = useState(true);
     const [isRedriving, setIsRedriving] = useState(false);
     const [redriveMessage, setRedriveMessage] = useState('');
+    const [archives, setArchives] = useState([]);
+    const [isLoadingArchives, setIsLoadingArchives] = useState(true);
+    const [archiveError, setArchiveError] = useState('');
 
     // Fetch metrics from the API
     const fetchMetrics = async () => {
@@ -27,10 +30,28 @@ export default function Verification() {
         }
     };
 
+    // Fetch S3 archives from the API
+    const fetchArchives = async () => {
+        try {
+            const response = await axios.get('/admin/api/s3-archives');
+            setArchives(response.data);
+            setArchiveError('');
+        } catch (error) {
+            console.error('Failed to fetch S3 archives', error);
+            setArchiveError('アーカイブ一覧の取得に失敗しました。');
+        } finally {
+            setIsLoadingArchives(false);
+        }
+    };
+
     // Set up polling
     useEffect(() => {
         fetchMetrics();
-        const interval = setInterval(fetchMetrics, 2000); // Poll every 2 seconds
+        fetchArchives();
+        const interval = setInterval(() => {
+            fetchMetrics();
+            fetchArchives();
+        }, 5000); // Poll every 5 seconds (slightly slower for S3 load)
         return () => clearInterval(interval);
     }, []);
 
@@ -73,6 +94,10 @@ export default function Verification() {
             // Clear message after 5 seconds
             setTimeout(() => setRedriveMessage(''), 5000);
         }
+    };
+
+    const handleDownload = (path) => {
+        window.location.href = `/admin/api/s3-archives/download?path=${encodeURIComponent(path)}`;
     };
 
     return (
@@ -369,6 +394,70 @@ export default function Verification() {
                         )}
                     </div>
 
+                </div>
+
+                {/* S3 Daily Archives Section */}
+                <div className="mt-8 bg-white shadow rounded-lg border border-gray-200 p-6 w-full">
+                    <h2 className="text-lg font-bold text-gray-900 border-b border-gray-200 pb-3 mb-4 flex items-center">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="text-indigo-600 mr-2 flex-shrink-0">
+                            <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/>
+                            <polyline points="3.27 6.96 12 12.01 20.73 6.96"/>
+                            <line x1="12" y1="22.08" x2="12" y2="12"/>
+                        </svg>
+                        S3 日次アーカイブ一覧
+                    </h2>
+                    <p className="text-sm text-gray-500 mb-6 leading-relaxed">
+                        S3 バケット（LocalStack）に保存されている日次水位アーカイブCSVファイルの一覧です。Laravel APIをプロキシとして直接ダウンロードが可能です。
+                    </p>
+
+                    {isLoadingArchives ? (
+                        <div className="flex justify-center items-center py-8">
+                            <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-indigo-600"></div>
+                        </div>
+                    ) : archiveError ? (
+                        <div className="p-4 bg-red-50 border border-red-200 rounded-md text-xs text-red-800">
+                            {archiveError}
+                        </div>
+                    ) : archives.length === 0 ? (
+                        <div className="text-center py-8 text-sm text-gray-400 bg-gray-50 rounded-lg border border-dashed border-gray-200">
+                            日次アーカイブCSVファイルが見つかりません。
+                        </div>
+                    ) : (
+                        <div className="overflow-x-auto">
+                            <table className="min-w-full divide-y divide-gray-200 text-sm">
+                                <thead className="bg-gray-50">
+                                    <tr>
+                                        <th className="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">ファイル名</th>
+                                        <th className="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">サイズ</th>
+                                        <th className="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">最終更新日時</th>
+                                        <th className="px-6 py-3 text-right text-xs font-semibold text-gray-500 uppercase tracking-wider">操作</th>
+                                    </tr>
+                                </thead>
+                                <tbody className="bg-white divide-y divide-gray-200 text-gray-700">
+                                    {archives.map((archive) => (
+                                        <tr key={archive.path} className="hover:bg-gray-50 transition-colors">
+                                            <td className="px-6 py-4 whitespace-nowrap font-mono text-xs">{archive.filename}</td>
+                                            <td className="px-6 py-4 whitespace-nowrap text-xs">{archive.size}</td>
+                                            <td className="px-6 py-4 whitespace-nowrap text-xs">{archive.last_modified}</td>
+                                            <td className="px-6 py-4 whitespace-nowrap text-right text-xs">
+                                                <button
+                                                    onClick={() => handleDownload(archive.path)}
+                                                    className="inline-flex items-center px-3 py-1.5 border border-gray-300 rounded shadow-sm text-xs font-semibold text-gray-700 bg-white hover:bg-gray-50 transition cursor-pointer"
+                                                >
+                                                    <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="mr-1.5 text-gray-500">
+                                                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                                                        <polyline points="7 10 12 15 17 10"/>
+                                                        <line x1="12" y1="15" x2="12" y2="3"/>
+                                                    </svg>
+                                                    ダウンロード
+                                                </button>
+                                            </td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </table>
+                        </div>
+                    )}
                 </div>
             </div>
         </div>

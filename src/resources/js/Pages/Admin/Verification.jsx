@@ -93,7 +93,10 @@ export default function Verification() {
                     <div className="lg:col-span-1 bg-white shadow rounded-lg border border-gray-200 p-6 flex flex-col justify-between w-full">
                         <div>
                             <h2 className="text-lg font-bold text-gray-900 border-b border-gray-200 pb-3 mb-4 flex items-center">
-                                <span className="mr-2">⚡</span> 負荷シミュレーター
+                                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="text-amber-500 mr-2 flex-shrink-0">
+                                    <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>
+                                </svg>
+                                負荷シミュレーター
                             </h2>
                             <p className="text-sm text-gray-500 mb-6 leading-relaxed">
                                 大規模な水位・気象観測イベントを擬似的に生成し、一括で SQS キューへ投入します。最適化されたバルクワーカーの処理能力を測定可能です。
@@ -146,7 +149,11 @@ export default function Verification() {
                     {/* Column 2: SQS Monitoring */}
                     <div className="lg:col-span-1 bg-white shadow rounded-lg border border-gray-200 p-6 w-full">
                         <h2 className="text-lg font-bold text-gray-900 border-b border-gray-200 pb-3 mb-4 flex items-center">
-                            <span className="mr-2">📥</span> SQS キュー監視
+                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="text-blue-500 mr-2 flex-shrink-0">
+                                <polyline points="22 12 16 12 14 15 10 15 8 12 2 12"/>
+                                <path d="M5.45 5.11 2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z"/>
+                            </svg>
+                            SQS キュー監視
                         </h2>
                         <p className="text-sm text-gray-500 mb-6 leading-relaxed">
                             AWS SQS のキュー属性（未処理件数および処理中のメッセージ件数）を動的に監視します。
@@ -161,7 +168,12 @@ export default function Verification() {
                                 {/* Water Level Queue */}
                                 <div className="p-4 bg-gray-50 rounded-lg border border-gray-150">
                                     <h3 className="text-sm font-bold text-gray-800 mb-3 flex justify-between items-center">
-                                        <span>🌊 水位データキュー</span>
+                                        <span className="flex items-center">
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="text-blue-500 mr-1.5 flex-shrink-0">
+                                                <path d="M12 22a7 7 0 0 0 7-7c0-4.3-7-11-7-11S5 10.7 5 15a7 7 0 0 0 7 7z"/>
+                                            </svg>
+                                            水位データキュー
+                                        </span>
                                         <span className="text-xs px-2 py-0.5 rounded bg-gray-200 text-gray-700 font-mono">raw-events</span>
                                     </h3>
                                     <div className="space-y-3">
@@ -195,7 +207,20 @@ export default function Verification() {
                                 {/* Weather Queue */}
                                 <div className="p-4 bg-gray-50 rounded-lg border border-gray-150">
                                     <h3 className="text-sm font-bold text-gray-800 mb-3 flex justify-between items-center">
-                                        <span>⛅ 気象データキュー</span>
+                                        <span className="flex items-center">
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="text-amber-500 mr-1.5 flex-shrink-0">
+                                                <path d="M12 2v2"/>
+                                                <path d="m18.4 5.6-1.4 1.4"/>
+                                                <path d="M22 12h-2"/>
+                                                <path d="m18.4 18.4-1.4-1.4"/>
+                                                <path d="M12 22v-2"/>
+                                                <path d="m5.6 18.4 1.4-1.4"/>
+                                                <path d="M2 12h2"/>
+                                                <path d="m5.6 5.6 1.4 1.4"/>
+                                                <path d="M16 12a4 4 0 1 1-8 0 4 4 0 0 1 8 0Z"/>
+                                            </svg>
+                                            気象データキュー
+                                        </span>
                                         <span className="text-xs px-2 py-0.5 rounded bg-gray-200 text-gray-700 font-mono">raw-events</span>
                                     </h3>
                                     <div className="space-y-3">
@@ -232,8 +257,12 @@ export default function Verification() {
                                         ? 'bg-red-50 border-red-200 text-red-800'
                                         : 'bg-green-50 border-green-200 text-green-800'
                                 }`}>
-                                    <div className="flex items-center space-x-2 font-semibold text-sm mb-1">
-                                        <span>⚠️</span>
+                                    <div className="flex items-center font-semibold text-sm mb-1">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="text-red-500 mr-2 flex-shrink-0">
+                                            <path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/>
+                                            <line x1="12" y1="9" x2="12" y2="13"/>
+                                            <line x1="12" y1="17" x2="12.01" y2="17"/>
+                                        </svg>
                                         <span>デッドレターキュー (DLQ)</span>
                                     </div>
                                     <p className="text-xs">
@@ -252,7 +281,11 @@ export default function Verification() {
                     {/* Column 3: DB Record Metrics */}
                     <div className="lg:col-span-1 bg-white shadow rounded-lg border border-gray-200 p-6 w-full">
                         <h2 className="text-lg font-bold text-gray-900 border-b border-gray-200 pb-3 mb-4 flex items-center">
-                            <span className="mr-2">📈</span> DB 書き込みパフォーマンス
+                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="text-emerald-500 mr-2 flex-shrink-0">
+                                <polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/>
+                                <polyline points="17 6 23 6 23 12"/>
+                            </svg>
+                            DB 書き込みパフォーマンス
                         </h2>
                         <p className="text-sm text-gray-500 mb-6 leading-relaxed">
                             直近 5 分間にデータベースへ登録（バルクインサート）された観測レコードの件数を監視します。
@@ -286,7 +319,12 @@ export default function Verification() {
 
                                 <div className="p-4 bg-gray-50 border border-gray-150 rounded-lg text-gray-700 text-xs leading-relaxed">
                                     <h4 className="font-semibold text-gray-950 mb-1 flex items-center">
-                                        💡 バルク処理と悲観的ロックの効果
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="text-amber-500 mr-1.5 flex-shrink-0">
+                                            <path d="M15 14c.2-1 .7-1.7 1.5-2.5 1-.9 1.5-2.2 1.5-3.5A5 5 0 0 0 8 8c0 1 .3 2.2 1.5 3.5.7.7 1.3 1.5 1.5 2.5"/>
+                                            <path d="M9 18h6"/>
+                                            <path d="M10 22h4"/>
+                                        </svg>
+                                        バルク処理と悲観的ロックの効果
                                     </h4>
                                     SQS から一度にメッセージを取得して一括保存（Bulk Insert）を行うことで、大量イベント受信時における DB I/O のオーバーヘッドを極限まで削減しています。また、並行更新時にはデータベース行の悲観的ロック（Pessimistic Lock）によりデータの整合性を担保しています。
                                 </div>

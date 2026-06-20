@@ -4,7 +4,7 @@ id: 25
 skill: pr-workflow
 branch-slug: localstack-init-resources
 github_issue: 4
-status: open
+status: close
 type: feat
 対象: docker/localstack/init/ready.d/01-init-resources.sh (新規), docker-compose.yml, src/.env.docker
 内容: B パターン（オンプレ SV6 上で LocalStack をシミュレーション常駐）運用に向け、LocalStack 起動時に SQS キュー・S3 バケットを自動作成する初期化フックを追加し、env を実リソースと整合させる。

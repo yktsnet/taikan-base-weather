@@ -3,7 +3,7 @@
 id: 32
 skill: pr-workflow
 branch-slug: fix-login-behind-tunnel
-status: open
+status: close
 type: fix
 対象: bootstrap/app.php, .env.docker
 内容: Cloudflare Tunnel (HTTPS) 経由のアクセスでセッション/CSRF が壊れ、ログイン後の redirect が機能しない問題の修正

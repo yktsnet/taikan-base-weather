@@ -17,6 +17,8 @@ services:
       sh -c "
       if [ ! -f vendor/autoload.php ]; then composer install; fi &&
       if [ ! -f public/build/manifest.json ]; then npm ci && npm run build; fi &&
+      if [ ! -f .env ]; then cp .env.docker .env; fi &&
+      if grep -q '^APP_KEY=$$' .env; then php artisan key:generate --force; fi &&
       until php artisan migrate --force; do echo 'DB not ready, retrying in 3s...'; sleep 3; done &&
       php artisan db:seed --force &&
       php artisan serve --host=0.0.0.0 --port=8000

@@ -3,7 +3,7 @@
 id: 31
 skill: pr-workflow
 branch-slug: startup-key-and-localstack-fix
-status: open
+status: done
 type: fix
 対象: docker-compose.yml, docker/localstack/init/ready.d/01-init-resources.sh
 内容: APP_KEY 未生成によるセッション/CSRF 不安定、および LocalStack init スクリプトの JSON エスケープバグにより S3 バケットが作成されない問題の修正

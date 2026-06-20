@@ -4,7 +4,7 @@ id: 30
 skill: pr-workflow
 branch-slug: deploy-run-migrate-seed
 github_issue: 13
-status: open
+status: done
 type: fix
 対象: docker-compose.yml, .github/workflows/deploy.yml
 内容: 本番(sv6)・ローカル(kw_up)とも DB マイグレーション/シーディングが自動実行されず、観測所データ・管理者ユーザが投入されないため、ダッシュボードの表が空になりログインもできない問題の修正

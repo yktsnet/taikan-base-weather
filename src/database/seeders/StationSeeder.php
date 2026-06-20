@@ -135,6 +135,10 @@ class StationSeeder extends Seeder
             ],
         ];
 
-        DB::table('stations')->insert($stations);
+        DB::table('stations')->upsert(
+            $stations,
+            ['code'],
+            ['name', 'river_name', 'prefecture', 'lat', 'lng', 'warning_level', 'danger_level', 'updated_at']
+        );
     }
 }

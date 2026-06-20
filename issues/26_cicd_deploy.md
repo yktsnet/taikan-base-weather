@@ -4,7 +4,7 @@ id: 26
 skill: pr-workflow
 branch-slug: cicd-deploy
 github_issue: 6
-status: open
+status: close
 type: feat
 対象: .github/workflows/deploy.yml (新規)
 内容: cicd-guide の compose 型に従い、main の CI 通過後に sv6 へ自動デプロイする deploy.yml を追加する。フロントは CI 内でビルドして同梱する（todo 2-3）。

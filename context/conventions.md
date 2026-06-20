@@ -21,3 +21,4 @@
   ```bash
   find src/app -name "*.php" | xargs -I{} php -l {}
   ```
+- **Nix 環境前提**: ホストは Nix 管理。`pip install` / `npm install -g` 等のグローバルインストールは禁止（環境を汚す）。標準で入っていないツールが要る場合のみ、使い捨てシェル `nix-shell -p {pkg} --run "..."` で実行する。YAML/compose の検証は基本目視、必要なら `nix-shell -p yq-go`。

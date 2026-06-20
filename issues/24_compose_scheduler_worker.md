@@ -8,7 +8,7 @@ status: open
 type: feat
 対象: docker-compose.yml
 内容: SV6 上で観測データ更新を全自動化するため、Laravel スケジューラとキューワーカーを docker-compose の常駐サービスとして追加する。NixOS cron / systemd には依存せず compose 完結とする。
-確認: docker-compose.yml を YAML としてパースできること（`python3 -c "import yaml,sys; yaml.safe_load(open('docker-compose.yml'))"`）、および既存 app/db/localstack 定義と整合していることの目視確認。
+確認: docker-compose.yml の YAML 構造（インデント・サービス定義）を目視確認し、既存 app/db/localstack 定義と整合していること。機械チェックが必要な場合のみ Nix 流の使い捨てシェル `nix-shell -p yq-go --run "yq e '.' docker-compose.yml"` を使う（`pip install` は禁止）。
 
 ---
 

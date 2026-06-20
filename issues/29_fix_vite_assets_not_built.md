@@ -4,7 +4,7 @@ id: 29
 skill: pr-workflow
 branch-slug: fix-vite-assets-not-built
 github_issue: 11
-status: open
+status: close
 type: fix
 対象: docker-compose.yml
 内容: ローカル（kw_up）起動時に Vite フロントエンドアセットがビルド・配信されず、Inertia/React 本体がマウントされない問題の修正

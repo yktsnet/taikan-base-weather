@@ -1,0 +1,62 @@
+name: Deploy to Production
+
+on:
+  workflow_run:
+    workflows: ["Testing & CI"]
+    types: [completed]
+    branches: [main]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: src/package-lock.json
+
+      - name: Install frontend dependencies
+        working-directory: ./src
+        run: npm ci
+
+      - name: Build frontend assets
+        working-directory: ./src
+        run: npm run build
+
+      - name: Connect to Tailscale
+        uses: tailscale/github-action@v3
+        with:
+          oauth-client-id: ${{ secrets.TS_OAUTH_CLIENT_ID }}
+          oauth-secret: ${{ secrets.TS_OAUTH_SECRET }}
+          tags: tag:ci
+
+      - name: Transfer source to server
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/deploy_key
+          chmod 600 ~/.ssh/deploy_key
+
+          rsync -azv --delete \
+            --exclude='node_modules' \
+            --exclude='.git' \
+            --exclude='vendor' \
+            --exclude='src/.env' \
+            --exclude='src/storage/logs/*' \
+            --exclude='src/storage/framework/cache/*' \
+            --exclude='src/storage/framework/sessions/*' \
+            --exclude='src/storage/framework/views/*' \
+            -e "ssh -i ~/.ssh/deploy_key -o StrictHostKeyChecking=no" \
+            ./ ${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }}:~/projects/kawa-watch/
+
+      - name: Start application on server
+        run: |
+          ssh -i ~/.ssh/deploy_key -o StrictHostKeyChecking=no \
+            ${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }} \
+            "cd ~/projects/kawa-watch && docker compose up -d --build"

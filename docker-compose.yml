@@ -30,6 +30,32 @@ services:
     volumes:
       - kawa-watch-db-data:/var/lib/mysql
 
+  scheduler:
+    image: kawa-watch-app
+    container_name: kawa-watch-scheduler
+    restart: unless-stopped
+    working_dir: /var/www
+    volumes:
+      - ./src:/var/www
+    depends_on:
+      - app
+      - db
+      - localstack
+    command: php artisan schedule:work
+
+  worker:
+    image: kawa-watch-app
+    container_name: kawa-watch-worker
+    restart: unless-stopped
+    working_dir: /var/www
+    volumes:
+      - ./src:/var/www
+    depends_on:
+      - app
+      - db
+      - localstack
+    command: php artisan app:bulk-queue-worker
+
   localstack:
     image: localstack/localstack:3.0
     container_name: kawa-watch-localstack

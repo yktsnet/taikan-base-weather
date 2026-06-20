@@ -16,7 +16,7 @@ return Application::configure(basePath: dirname(__DIR__))
         $schedule->command('app:poll-weather')->everyFiveMinutes();
     })
     ->withMiddleware(function (Middleware $middleware): void {
-        //
+        $middleware->trustProxies(at: '*');
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         //

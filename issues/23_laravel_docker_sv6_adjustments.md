@@ -3,7 +3,7 @@ id: 23
 skill: pr-workflow
 branch-slug: laravel-docker-sv6-adjustments
 github_issue: 1
-status: open
+status: close
 type: feat
 対象: src/bootstrap/app.php, docker-compose.yml, src/.env.docker
 内容: SV6での本番稼働に向けて、Laravelの自動実行スケジュールを定義し、Redis/Mailpitの削除やポート競合回避などのDocker構成調整を行う。

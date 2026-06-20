@@ -2,7 +2,7 @@
 id: 23
 skill: pr-workflow
 branch-slug: laravel-docker-sv6-adjustments
-github_issue:
+github_issue: 1
 status: open
 type: feat
 対象: src/bootstrap/app.php, docker-compose.yml, src/.env.docker

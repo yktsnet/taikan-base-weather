@@ -3,7 +3,7 @@
 id: 28
 skill: pr-workflow
 branch-slug: pint-style-fix
-github_issue:
+github_issue: 8
 status: open
 type: cleanup
 対象: src/app/Http/Controllers/Admin/VerificationController.php, src/app/Services/SqsQueueService.php, src/database/seeders/DatabaseSeeder.php, src/routes/web.php

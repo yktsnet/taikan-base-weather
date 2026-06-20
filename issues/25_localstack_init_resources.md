@@ -3,7 +3,7 @@
 id: 25
 skill: pr-workflow
 branch-slug: localstack-init-resources
-github_issue:
+github_issue: 4
 status: open
 type: feat
 対象: docker/localstack/init/ready.d/01-init-resources.sh (新規), docker-compose.yml, src/.env.docker

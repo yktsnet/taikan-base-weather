@@ -13,7 +13,12 @@ services:
       - "8093:8000"
     depends_on:
       - db
-    command: sh -c "if [ ! -f vendor/autoload.php ]; then composer install; fi && php artisan serve --host=0.0.0.0 --port=8000"
+    command: >
+      sh -c "
+      if [ ! -f vendor/autoload.php ]; then composer install; fi &&
+      if [ ! -f public/build/manifest.json ]; then npm ci && npm run build; fi &&
+      php artisan serve --host=0.0.0.0 --port=8000
+      "
 
   db:
     image: mysql:8.0

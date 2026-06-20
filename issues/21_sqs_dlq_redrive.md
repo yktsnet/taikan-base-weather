@@ -3,7 +3,7 @@ id: 21
 skill: pr-workflow
 branch-slug: sqs-dlq-redrive
 github_issue:
-status: closed
+status: close
 type: feat
 対象: src/app/Http/Controllers/Admin/VerificationController.php (変更), src/resources/js/Pages/Admin/Verification.jsx (変更), src/app/Services/SqsQueueService.php (変更)
 内容: 管理者検証パネルから、デッドレターキュー（DLQ）に滞留したメッセージを元の処理用メインキューに再投入（Redrive）するためのバックエンドAPIおよびフロントエンドUI（再投入ボタン）を実装します。

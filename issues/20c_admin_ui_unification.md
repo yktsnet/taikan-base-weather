@@ -3,7 +3,7 @@ id: 20c
 skill: pr-workflow
 branch-slug: admin-ui-unification
 github_issue:
-status: closed
+status: close
 type: fix
 対象: src/resources/js/Pages/Dashboard.jsx (変更), src/resources/js/Pages/Admin/Verification.jsx (変更)
 内容: 一般ダッシュボードと管理者検証パネルの間で発生している、左上アイコン（シールドアイコンの廃止と波アイコンへの変更）、バッジ（ピル）の表示有無、日本語表記への完全統一、および右上のアウトラインボタン枠線のデザインを一貫したものに修正します。

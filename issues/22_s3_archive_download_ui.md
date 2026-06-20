@@ -3,7 +3,7 @@ id: 22
 skill: pr-workflow
 branch-slug: s3-archive-download-ui
 github_issue:
-status: closed
+status: close
 type: feat
 対象: src/app/Http/Controllers/Admin/VerificationController.php (変更), src/resources/js/Pages/Admin/Verification.jsx (変更), src/routes/web.php (変更)
 内容: S3（LocalStack）に保存されている日次アーカイブのCSVファイルを、管理者がブラウザから一覧確認し、直接ダウンロードできる仕組みを実装します。ネットワーク環境に左右されず確実にダウンロードできるよう、LaravelバックエンドがS3からファイルを仲介（プロキシ）してレスポンスするストリームダウンロードAPIを採用します。

@@ -3,7 +3,7 @@ id: 20b
 skill: pr-workflow
 branch-slug: admin-ui-refinement
 github_issue:
-status: closed
+status: close
 type: fix
 対象: src/resources/js/Pages/Dashboard.jsx (変更), src/resources/js/Pages/Admin/Verification.jsx (変更)
 内容: ダッシュボード右上の「Verification Mode」ボタンをニュートラルなグレーアウトラインに変更して青色の重複を完全に解消します。また、検証画面（Verification.jsx）のカード幅がヘッダーの右端と完全に揃うよう、`w-full` の明示などレイアウトの微調整を行います。

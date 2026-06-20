@@ -53,10 +53,10 @@ jobs:
             --exclude='src/storage/framework/sessions/*' \
             --exclude='src/storage/framework/views/*' \
             -e "ssh -i ~/.ssh/deploy_key -o StrictHostKeyChecking=no" \
-            ./ ${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }}:~/github-public/kawa-watch/
+            ./ ${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }}:${{ secrets.DEPLOY_PATH }}/
 
       - name: Start application on server
         run: |
           ssh -i ~/.ssh/deploy_key -o StrictHostKeyChecking=no \
             ${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }} \
-            "cd ~/github-public/kawa-watch && docker compose up -d --build"
+            "cd ${{ secrets.DEPLOY_PATH }} && docker compose up -d --build"

@@ -4,7 +4,7 @@ id: 24
 skill: pr-workflow
 branch-slug: compose-scheduler-worker
 github_issue: 2
-status: open
+status: close
 type: feat
 対象: docker-compose.yml
 内容: SV6 上で観測データ更新を全自動化するため、Laravel スケジューラとキューワーカーを docker-compose の常駐サービスとして追加する。NixOS cron / systemd には依存せず compose 完結とする。

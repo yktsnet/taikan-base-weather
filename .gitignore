@@ -64,3 +64,6 @@ src/database/*.sqlite-wal
 
 # SV6 Hosting Docs
 docs/sv6-hosting-todo.md
+
+# Claude Code personal override
+.claude/settings.local.json

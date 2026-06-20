@@ -1,5 +1,27 @@
 {
   "permissions": {
-    "deny": []
+    "allow": [
+      "Bash(git *)",
+      "Bash(gh pr *)",
+      "Bash(php *)",
+      "Bash(composer *)",
+      "Bash(npm run *)",
+      "Bash(./vendor/bin/pint *)",
+      "Bash(./vendor/bin/phpstan *)"
+    ],
+    "deny": [
+      "Bash(git push origin main*)",
+      "Bash(git push --force *)",
+      "Bash(git push -f *)",
+      "Bash(docker *)",
+      "Bash(docker compose *)",
+      "Bash(php artisan *)",
+      "Bash(ssh *)",
+      "Bash(rsync *)"
+    ]
+  },
+  "attribution": {
+    "commit": "",
+    "pr": ""
   }
 }

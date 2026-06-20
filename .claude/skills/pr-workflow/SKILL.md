@@ -4,7 +4,7 @@ description: Issue駆動開発における実装・検証・PR作成の標準フ
 disable-model-invocation: true
 ---
 以下の手順で割り当てられたIssueを実行する。
-前提: Agentはコード編集とPR作成までを担当。動作確認・マージはuser様が行う。
+前提: Agentはコード編集とPR作成までを担当。動作確認・マージはuserが行う。
 
 0. `context/conventions.md` を読み、技術スタックと規約を把握する。
 1. `issues/` ディレクトリ内の対象Issueファイル（status: open）を読み込む。
@@ -18,6 +18,7 @@ disable-model-invocation: true
 5. PRボディと控えファイルの作成。
    - `.git/pr_body.md` に以下の内容を書き出す。
    - 同内容を `issues/done/{id}_{branch-slug}_pr.md` にもコピーして作成する。
+   - 情報セキュリティ: PR本文・コミットメッセージ・控えファイルに、固有の接続情報（ドメイン実値・公開ポート・本番絶対パス・SSHユーザ名等）を直書きしない。デバイス名（`sv6`）・localhost・開発ポート・リポジトリ相対パスは可。
 
    ## 変更内容
    {Issueの内容フィールドを展開}
@@ -26,7 +27,7 @@ disable-model-invocation: true
    {確認項目に対して実行した結果。git diff --name-only の出力を含む}
 
    ## 検証手順
-   {実装内容から判断した、user様がローカルで確認するための手順}
+   {実装内容から判断した、userがローカルで確認するための手順}
 
 6. コミット対象の確認。
    - `git add` ですべての変更ファイル（作成した控えファイル `issues/done/{id}_{branch-slug}_pr.md` を含む）をステージングする。

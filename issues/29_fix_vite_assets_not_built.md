@@ -3,7 +3,7 @@
 id: 29
 skill: pr-workflow
 branch-slug: fix-vite-assets-not-built
-github_issue:
+github_issue: 11
 status: open
 type: fix
 対象: docker-compose.yml

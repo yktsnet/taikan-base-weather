@@ -280,12 +280,6 @@ class SqsQueueService
 
     /**
      * Redrive messages from DLQ to the appropriate main queues based on content.
-     *
-     * @param string $dlqUrl
-     * @param string $waterQueueUrl
-     * @param string $weatherQueueUrl
-     * @param int $maxCount
-     * @return int
      */
     public function redriveDlqQueue(string $dlqUrl, string $waterQueueUrl, string $weatherQueueUrl, int $maxCount = 100): int
     {
@@ -320,7 +314,7 @@ class SqsQueueService
                 }
             }
 
-            if (!empty($waterMessages)) {
+            if (! empty($waterMessages)) {
                 if ($this->sendMessageBatch($waterQueueUrl, $waterMessages)) {
                     $this->deleteMessageBatch($dlqUrl, $waterHandles);
                     $redrivenCount += count($waterMessages);
@@ -330,7 +324,7 @@ class SqsQueueService
                 }
             }
 
-            if (!empty($weatherMessages)) {
+            if (! empty($weatherMessages)) {
                 if ($this->sendMessageBatch($weatherQueueUrl, $weatherMessages)) {
                     $this->deleteMessageBatch($dlqUrl, $weatherHandles);
                     $redrivenCount += count($weatherMessages);

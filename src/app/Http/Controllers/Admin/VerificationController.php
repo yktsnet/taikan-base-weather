@@ -35,7 +35,7 @@ class VerificationController extends Controller
         // Run the load test Artisan command in the background
         $artisanPath = base_path('artisan');
         $command = "php {$artisanPath} app:load-test-poller --count={$count} > /dev/null 2>&1 &";
-        
+
         Log::info('Triggering load test command in background', ['command' => $command]);
         shell_exec($command);
 
@@ -55,9 +55,9 @@ class VerificationController extends Controller
         $dlqQueueUrl = env('AWS_SQS_DLQ_QUEUE_URL', '');
 
         // Fetch SQS message counts
-        $waterMetrics = !empty($waterQueueUrl) ? $this->sqsService->getQueueAttributes($waterQueueUrl) : ['pending' => 0, 'in_flight' => 0];
-        $weatherMetrics = !empty($weatherQueueUrl) ? $this->sqsService->getQueueAttributes($weatherQueueUrl) : ['pending' => 0, 'in_flight' => 0];
-        $dlqMetrics = !empty($dlqQueueUrl) ? $this->sqsService->getQueueAttributes($dlqQueueUrl) : ['pending' => 0, 'in_flight' => 0];
+        $waterMetrics = ! empty($waterQueueUrl) ? $this->sqsService->getQueueAttributes($waterQueueUrl) : ['pending' => 0, 'in_flight' => 0];
+        $weatherMetrics = ! empty($weatherQueueUrl) ? $this->sqsService->getQueueAttributes($weatherQueueUrl) : ['pending' => 0, 'in_flight' => 0];
+        $dlqMetrics = ! empty($dlqQueueUrl) ? $this->sqsService->getQueueAttributes($dlqQueueUrl) : ['pending' => 0, 'in_flight' => 0];
 
         // Fetch DB write counts in the last 5 minutes
         $fiveMinutesAgo = Carbon::now()->subMinutes(5);
@@ -71,7 +71,7 @@ class VerificationController extends Controller
             'db_records' => [
                 'water_levels_count_5m' => $waterDbCount,
                 'weather_records_count_5m' => $weatherDbCount,
-            ]
+            ],
         ]);
     }
 
@@ -119,7 +119,7 @@ class VerificationController extends Controller
 
             foreach ($files as $file) {
                 // Skip non-csv files if any
-                if (!str_ends_with($file, '.csv')) {
+                if (! str_ends_with($file, '.csv')) {
                     continue;
                 }
 
@@ -161,7 +161,7 @@ class VerificationController extends Controller
 
         $path = $request->input('path');
 
-        if (!Storage::disk('s3')->exists($path)) {
+        if (! Storage::disk('s3')->exists($path)) {
             abort(404, '指定されたアーカイブファイルが見つかりません。');
         }
 
@@ -181,6 +181,6 @@ class VerificationController extends Controller
 
         $bytes /= pow(1024, $pow);
 
-        return round($bytes, $precision) . ' ' . $units[$pow];
+        return round($bytes, $precision).' '.$units[$pow];
     }
 }

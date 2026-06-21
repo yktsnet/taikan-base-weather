@@ -1,29 +1,27 @@
-# kawa-watch (河川水位・気象モニタリングシステム)
-河川の水位データおよび気象データを定期取得・監視し、管理者へのアラート通知やダッシュボードでの可視化を行う Web アプリ。
-Laravel (Inertia + React) によるイベント駆動型モニタリングシステム。
+# TaikanBaseWeather（体感ベース天気）
+
+全国47都道府県の現在の天気を表示し、「今日は過去20年で何番目に暑い/寒い日か」をランキングで提示する Web アプリ。
+「最近暑い気がする」「今年は例年より寒い？」といった体感を、気象庁の実データで裏付ける。
 
 ---
 
 ## アーキテクチャ
 
 ```
-EventBridge (5分ごと)
+スケジューラ (5分ごと)
     ↓
-ECS Scheduled Task (poller: php artisan app:poll-* コマンド)
-    ↓ HTTP GET (※モック)
-水位データ / 気象データ
+WeatherPoller (php artisan app:poll-weather)
+    ↓ HTTP GET
+JMA AMeDAS API (リアルタイム気象)
     ↓
 SQS (raw-events + DLQ)
     ↓
-Laravel Queue Worker (ECS)
-    ├── water_levels / weather_records 保存
-    ├── 閾値チェック → alerts 生成
-    └── SES アラートメール (AlertNotification)
+BulkQueueWorker
+    ├── weather_records 保存（バルクインサート）
+    ├── ランキング計算 → キャッシュ更新
+    └── 極端値アラート（メール通知）
 
-MySQL 8 (Docker/LocalStack環境等) / SQLite (ローカル)
-S3 (CSV日次アーカイブ、管理画面からのプロキシダウンロード対応)
-
-ALB → ECS (Laravel App) → Inertia + React (Vite 8)
+MySQL 8 ← 全テーブル
 ```
 
 ---
@@ -34,49 +32,52 @@ ALB → ECS (Laravel App) → Inertia + React (Vite 8)
 |---|---|
 | バックエンド | Laravel 12 / PHP 8.3 |
 | フロントエンド | React 19 / Inertia.js 2.0 / Vite 8 |
-| DB | MySQL 8 (Docker/LocalStack環境等) / SQLite (ローカル開発) |
-| キュー/非同期 | AWS SQS + Laravel Queue Worker |
+| DB | MySQL 8 |
+| キュー/非同期 | AWS SQS + BulkQueueWorker（バルクインサート） |
+| キャッシュ | Laravel Cache (file / Redis) |
 | スタイリング | Tailwind CSS v4 |
-| メール (警告) | AWS SES (Mailable) / Mailpit (開発) |
+| 地図 | Leaflet.js / React-Leaflet |
+| IaC | Terraform + LocalStack |
 
 ---
 
-## データモデル概要
+## データソース
 
-```
-stations（観測所マスタ）
-  ├── water_levels（水位記録）
-  ├── weather_records（気象記録）
-  └── alerts（アラート履歴）
-```
+| データ | ソース | 用途 |
+|---|---|---|
+| リアルタイム気象 | JMA AMeDAS API | 現在の気温・降水量 |
+| 過去20年の日別気温 | JMA 過去の気象データ検索 | ランキング算出 |
+
+---
+
+## 主要機能
+
+| 機能 | 説明 |
+|---|---|
+| ダッシュボード | 全国47地点の現在の天気 + 過去20年中のランク表示 |
+| 地点詳細（カレンダー） | 月カレンダーで日別の最高気温とランクをヒートマップ表示 |
+| 管理者パネル | SQS キュー監視、DB 書き込み件数、負荷テスト実行 |
+| アラート通知 | 過去20年で1位の極端気温時にメール通知 |
+| 負荷テスト | 過去データ大量投入のシミュレーション（SQS バルク処理） |
 
 ---
 
 ## ローカル開発環境の構築
 
-開発環境は **Docker Compose（推奨）** または **WSLネイティブ（SQLite）** の2つの方法で起動可能です。
-
----
-
-### A. Docker Compose による構築（推奨）
-
-Docker を利用して、アプリケーション、MySQL データベース、Redis キャッシュ/キュー、および Mailpit メールキャッチャーを一括で起動します。
+### Docker Compose による構築（推奨）
 
 #### 1. 前提条件
 * Docker / Docker Desktop がインストールされ、デーモンが起動していること
 
 #### 2. 初回セットアップ & 起動
 ```bash
-# 1. コンテナのビルドとバックグラウンド起動
 docker compose up -d --build
 
-# 2. 依存関係のインストールと環境設定
 docker compose exec app composer install
 docker compose exec app npm install
 docker compose exec app cp .env.docker .env
 docker compose exec app php artisan key:generate
 
-# 3. データベースマイグレーションと初期データの投入
 docker compose exec app php artisan migrate --seed
 ```
 
@@ -91,90 +92,15 @@ docker compose exec app npm run dev
 
 ---
 
-### B. WSL ネイティブによる構築（SQLite）
+## 自動テスト
 
-WSL2 に直接 PHP や Node.js をインストールして起動します。
-
-#### 1. 前提条件
-* WSL2 (Ubuntu) + PHP 8.3/8.4 + Node.js (Vite動作環境) がインストール済みであること
-
-#### 2. 初回セットアップ
 ```bash
-cd src
+# テスト実行
+docker compose exec app php artisan test
 
-# 1. 依存関係のインストール
-composer install
-npm install
+# コードスタイルチェック
+docker compose exec app ./vendor/bin/pint --test
 
-# 2. 環境設定ファイルの準備とキー生成
-cp .env.example .env
-php artisan key:generate
-
-# 3. SQLite データベースの作成と接続設定 (MySQL設定の無効化)
-touch database/database.sqlite
-sed -i 's/DB_CONNECTION=mysql/DB_CONNECTION=sqlite/g' .env
-sed -i 's/^DB_HOST=/#DB_HOST=/g' .env
-sed -i 's/^DB_PORT=/#DB_PORT=/g' .env
-sed -i 's/^DB_DATABASE=/#DB_DATABASE=/g' .env
-sed -i 's/^DB_USERNAME=/#DB_USERNAME=/g' .env
-sed -i 's/^DB_PASSWORD=/#DB_PASSWORD=/g' .env
-
-# 4. セッションとキャッシュを file に変更 (SQLエラーの回避)
-sed -i 's/SESSION_DRIVER=database/SESSION_DRIVER=file/g' .env
-sed -i 's/CACHE_STORE=database/CACHE_STORE=file/g' .env
-
-# 5. マイグレーションと初期マスタデータ (シード) の投入
-php artisan migrate --seed
+# 静的解析
+docker compose exec app ./vendor/bin/phpstan analyse
 ```
-
-#### 3. 起動方法
-```bash
-# ターミナル1: Vite開発サーバーの起動
-npm run dev
-
-# ターミナル2: Laravelローカルサーバーの起動
-php artisan serve
-```
-→ [http://localhost:8000](http://localhost:8000) でアクセス可能
-
----
-
-## 自動テストの実行
-
-本プロジェクトでは **Pest** テストスイートおよびコードフォーマッター（Pint）を導入しています。
-
-### 1. テストの実行
-* **Docker Compose 環境**:
-  ```bash
-  docker compose exec app php artisan test
-  ```
-* **WSL ネイティブ環境**:
-  ```bash
-  php artisan test
-  ```
-
-### 2. コードスタイルのチェックと整形 (Laravel Pint)
-* **Docker Compose 環境**:
-  ```bash
-  docker compose exec app ./vendor/bin/pint
-  ```
-* **WSL ネイティブ環境**:
-  ```bash
-  ./vendor/bin/pint
-  ```
-
----
-
-## 主要機能
-
-| 機能 | 説明 |
-|---|---|
-| ダッシュボード | 観測所一覧・最新の水位/気象データのリアルタイム監視（警戒ステータスバッジ表示） |
-| 観測所詳細 | 特定の観測所の基本情報および直近24件の水位・気象履歴の表示 |
-| アラート履歴 | 発生した警告ログ（注意・警戒・危険水位の超過履歴）の一覧表示 |
-| データ収集バッチ (Poller) | 水位データ（`app:poll-water-level`）および気象データ（`app:poll-weather`）を取得し、SQSへイベント送信するコマンド |
-| 非同期処理 (Worker) | SQSからデータを受信し、データベース保存・閾値超過時のアラート登録とSESメール通知（`AlertNotification`）を非同期実行するジョブ |
-| 管理者検証パネル | キューの滞留件数やDB書き込み件数のリアルタイム監視、バックグラウンド負荷テスト実行、DLQ再投入、S3アーカイブのダウンロードなどの検証用UI |
-| DLQメッセージ再投入 | 送信エラーなどでデッドレターキュー（DLQ）に滞留したメッセージを、検証パネルからワンクリックでメインキューへ再投入（Redrive）する機能 |
-| S3日次アーカイブ | 前日の水位データを自動でCSV化してS3に保存し、検証パネルからLaravelプロキシ経由で直接ストリームダウンロードする機能 |
-| 負荷テスト & バルク処理 | 数千〜数万件規模の擬似センサーイベントをSQSへ一括投入し、バルクインサートで高速処理する最適化設計 |

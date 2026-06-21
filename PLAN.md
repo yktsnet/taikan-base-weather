@@ -1,141 +1,233 @@
-# PLAN.md — 河川水位・気象モニタリング
+# PLAN.md — TaikanBaseWeather（体感ベース天気）
 
-> 作業ノート。README.md 作成時に統合する。
+> 作業ノート。実装ステップと設計判断の記録。
 
 ---
 
 ## プロジェクト概要
 
-国土交通省の河川水位データ・気象庁の気象データを定期取得し、
-Laravel + Inertia + React によるダッシュボードで可視化する。
+全国47都道府県の現在の天気をリアルタイム表示し、
+「今日は過去20年で何番目に暑い/寒い日か」をランキングで提示する Web アプリ。
 
-IoT デバイス → HTTPS イベント受信という実案件パターンを、
-公開 API ポーリング → SQS 投入で代替する。アーキテクチャは同一。
+気象庁 AMeDAS のリアルタイムデータと過去の気象データ検索を組み合わせ、
+「最近暑い気がする」「今年は寒くないか」といった体感を実データで裏付ける。
+
+Laravel + SQS + バルク処理による大量トラフィック対策の学習教材を兼ねる。
+
+### 前身: kawa-watch
+
+河川水位モニタリングとして開始したが、国交省の水位 API が自動アクセスを
+明示禁止（403）しており実データが取得不可能だったため、方向転換。
+JMA AMeDAS（リアルタイム気象）と過去の気象データ検索（20年分の日別データ）は
+いずれも疎通確認済みで、全47局のデータ取得を実証済み。
 
 ---
 
 ## アーキテクチャ
 
 ```
-EventBridge (5分ごと)
+スケジューラ (5分ごと)
     ↓
-ECS Scheduled Task (poller)
+WeatherPoller (php artisan app:poll-weather)
     ↓ HTTP GET
-国交省水文API / 気象庁API
+JMA AMeDAS API (リアルタイム気象)
     ↓
 SQS (raw-events + DLQ)
     ↓
-Laravel Queue Worker (ECS)
-    ├── water_levels / weather_records 保存
-    ├── 閾値チェック → alerts 生成
-    └── SES アラートメール
+BulkQueueWorker
+    ├── weather_records 保存（バルクインサート）
+    ├── ランキング計算 → キャッシュ更新
+    └── 極端値アラート（メール通知）
 
-RDS MySQL 8 ← 全テーブル
-S3            ← CSV 日次アーカイブ
+MySQL 8 ← 全テーブル
 
 ALB → ECS (Laravel App) → Inertia + React
+```
+
+### 過去データ投入（初期セットアップ）
+
+```
+ImportHistoricalData コマンド
+    ↓ HTTP GET
+JMA 過去の気象データ検索 (HTML テーブル)
+    ↓ パース
+SQS → BulkQueueWorker → daily_temperatures テーブル
+    (20年 × 365日 × 47局 ≒ 34万件)
 ```
 
 ---
 
 ## データモデル
 
-### stations（観測所マスタ）
+### stations（観測地点マスタ）
 
 | カラム | 型 | 備考 |
 |---|---|---|
 | id | bigint PK | |
-| code | varchar | 国交省観測所コード |
-| name | varchar | 観測所名 |
-| river_name | varchar | 河川名 |
+| code | varchar | 都道府県コード (01-47) |
+| name | varchar | 地点名（都道府県庁所在地） |
 | prefecture | varchar | 都道府県 |
+| amedas_code | varchar | AMeDAS リアルタイム用コード |
+| prec_no | int | 過去データ検索用 地域番号 |
+| block_no | varchar | 過去データ検索用 地点番号 |
+| history_url_type | enum | s1（官署）/ a1（AMeDAS） |
 | lat / lng | decimal | 地図表示用 |
-| warning_level | decimal | 注意水位 (m) |
-| danger_level | decimal | 警戒水位 (m) |
 
-### water_levels
+### weather_records（リアルタイム気象）
 
 | カラム | 型 | 備考 |
 |---|---|---|
 | id | bigint PK | |
 | station_id | bigint FK | |
 | observed_at | timestamp | 観測時刻 |
-| level_m | decimal | 水位 (m) |
-| alert_status | enum | normal/caution/warning/danger |
+| temperature_c | decimal | 気温 (℃) |
+| precipitation_mm | decimal | 降水量 (mm/h) |
 
-### weather_records
+### daily_temperatures（過去日別気温）
 
 | カラム | 型 | 備考 |
 |---|---|---|
 | id | bigint PK | |
-| station_id | bigint FK | 最近傍観測所に紐付け |
-| observed_at | timestamp | |
-| precipitation_mm | decimal | 降水量 (mm/h) |
-| temperature_c | decimal | 気温 (℃) |
+| station_id | bigint FK | |
+| date | date | 観測日 |
+| max_temp | decimal | 最高気温 (℃) |
+| min_temp | decimal | 最低気温 (℃) |
+| avg_temp | decimal | 平均気温 (℃) |
 
-### alerts
+### alerts（アラート履歴）
 
 | カラム | 型 | 備考 |
 |---|---|---|
 | id | bigint PK | |
 | station_id | bigint FK | |
 | triggered_at | timestamp | |
-| level | enum | caution/warning/danger |
-| level_m | decimal | トリガー時の水位 |
-| notified | boolean | SES 送信済みフラグ |
+| type | enum | extreme_heat / extreme_cold / record_high / record_low |
+| temperature_c | decimal | トリガー時の気温 |
+| rank | int | 過去20年中の順位 |
+| notified | boolean | メール送信済みフラグ |
 
 ---
 
-## フェーズ
+## 実装ステップ
 
-### Phase 1 — ローカルAWSサンドボックス統合 + 基本機能
+### Step 1 — リネーム＋水位撤去
 
-#### LocalStack / Terraform
-- [x] LocalStack (無料版) をローカル環境 (Docker Compose) へ導入
-- [x] LocalStack向けTerraformプロバイダ設定の追加
-- [x] SQSキュー・S3バケットのLocalStackへのプロビジョニング (`terraform apply`)
-- [x] Laravel / WorkerからのLocalStack SQS/S3への接続疎通確認
-- [ ] (将来の本番移行用) ECR / ECS Cluster / EventBridge / ALB 等のTerraform定義テンプレートの整理（※実稼働は行わず、移行準備用）
+- [x] フォルダ名・リモート名を `taikan-base-weather` に変更
+- [ ] 水位関連コード削除（WaterLevelPoller, RiverApiService, water_levels テーブル, ProcessWaterLevelEvent 等）
+- [ ] アプリ名・ロゴ・タイトルを TaikanBaseWeather に変更
 
-#### Laravel セットアップ & 基本実装 (完了済み)
-- [x] Laravel 12 プロジェクト作成 (Vite 8 + React 19 + Tailwind v4)
-- [x] Inertia.js + React + Vite の初期構成
-- [x] SQS Queue 接続設定 (aws-sdk/sqs)
-- [x] Migration 実行 (stations / water_levels / weather_records / alerts)
-- [x] Seeder: stations マスタ（関西圏 10 観測所）
-- [x] 擬似Pollerコマンド (`app:poll-water-level`, `app:poll-weather`) 実装
-- [x] Queue Worker (`ProcessWaterLevelEvent`, `ProcessWeatherEvent`) とメール通知実装
-- [x] ダッシュボード基本画面 (一覧、詳細、アラート履歴)
+### Step 2 — 全国47局ステーション再設計
+
+- [ ] Station モデル/マイグレーションに amedas_code, prec_no, block_no, history_url_type を追加
+- [ ] StationSeeder に47局分のマッピングを投入
+- [ ] JmaApiService のステーションマッピングを47局対応に拡張
+
+### Step 3 — 過去データ取込パイプライン
+
+- [ ] daily_temperatures テーブル新設
+- [ ] JMA 過去データ HTML パーサー（s1/a1 両対応）
+- [ ] 取込コマンド → SQS → BulkQueueWorker で投入
+- [ ] 約34万件（20年 × 365日 × 47局）
+
+### Step 4 — ランキング計算 + キャッシュ
+
+- [ ] 同月日の過去20年分を引いて順位算出する Service
+- [ ] Laravel キャッシュで日次保持
+
+### Step 5 — ダッシュボード UI
+
+- [ ] 全国地図 + 地域フィルター
+- [ ] 地点カード: 現在の天気 + 今日のランク
+- [ ] 暑い/寒いを色で直感表示
+
+### Step 6 — 地点詳細 カレンダー UI
+
+- [ ] 月カレンダーに日別最高気温 + ランク
+- [ ] セル色でヒートマップ的に表現
+- [ ] 月切替で過去も追跡可能
+
+### Step 7 — 負荷テスト・管理画面調整
+
+- [ ] LoadTestPoller を気温データ投入向けに改修
+- [ ] 処理時間・スループットを UI に返す
+- [ ] テストデータの汚染防止
 
 ---
 
-### Phase 2 — 可視化の強化 + 高トラフィック受信の最適化
+## 技術選定
 
-#### ダッシュボードの可視化強化
-- [x] **水位推移グラフ (Chart.js / react-chartjs-2)**:
-  - 注意水位・警戒水位の境界ラインを重ねた水位・降雨量（棒・折れ線）の複合グラフ表示
-- [x] **観測所マップ (Leaflet.js / React-Leaflet)**:
-  - 地図上に10箇所の観測所をピン表示。警戒状況（normal/warning/danger等）に応じた色の動的変化
-
-#### 高トラフィックデータ受信の最適化（負荷検証 & チューニング）
-- [x] **負荷テスト用Pollerコマンドの追加**:
-  - 数千〜数万件規模の擬似センサーイベントを瞬時にSQSへ一括投入する機能の実装
-- [x] **Queue Workerのバルク処理化**:
-  - メッセージ受信・処理時のデータベース保存をバルクインサートに変更し、DBへのI/O負荷を低減する
-- [x] **マルチプロセスWorkerとデータ整合性の担保**:
-  - Workerをマルチプロセスで並行起動した際の処理効率化と、同一観測所データの同時書き込みにおけるデッドロック回避（トランザクションとDBロックの最適化）
-
-#### 運用機能
-- [x] **S3 CSV日次アーカイブ**:
-  - 前日の水位データを日次バッチで自動CSV化し、LocalStack S3バケットへアップロードする機能、および管理者検証パネルからのプロキシダウンロードUIの実装 (完了)
-- [ ] **Laravel Horizon (Queue 監視 UI) の導入**:
-  - 大量ジョブ実行時のキューの滞留状況を可視化・監視する
+| 種別 | 技術 | 備考 |
+|---|---|---|
+| バックエンド | Laravel 12 / PHP 8.3 | kawa-watch から継続 |
+| フロントエンド | React 19 / Inertia.js / Vite 8 | 同上 |
+| DB | MySQL 8 | 34万件程度なので十分 |
+| キュー | SQS + BulkQueueWorker | 初期データ投入で活きる |
+| キャッシュ | Laravel Cache (file or Redis) | ランキングの日次キャッシュ |
+| IaC | Terraform + LocalStack | 同上 |
+| 地図 | Leaflet.js | 全国表示に変更 |
+| グラフ | Chart.js | カレンダーUI向け |
 
 ---
 
-## 未決事項・設計判断
+## データソース（疎通確認済み）
 
-- [x] **AWSモックサンドボックス**: LocalStack (Community版) を採用し、SQS・S3をローカル環境でTerraformを用いて構築可能とする。これにより本番AWS移行がスムーズになる。
-- [x] **高トラフィック対策の軸**: 水位計デバイスからの「大量データ受信・非同期処理」の最適化を主軸とし、バルク処理や並列実行時の整合性確保を実装する。
-- [x] **可視化ライブラリ**: グラフは `Chart.js`、地図は `Leaflet.js` を採用。軽量で React 19 / Inertia 環境との親和性が高い。
-- [ ] **本番AWSへの移行・デプロイ設計の整備**: LocalStack環境から本番AWSへスムーズに切り替えるための環境変数やTerraform設定変更手順のドキュメント化。
+| データ | ソース | 形式 | 状態 |
+|---|---|---|---|
+| リアルタイム気温・降水量 | JMA AMeDAS `data/map/{timestamp}.json` | JSON | 47局全局 OK |
+| 過去日別気温（20年分） | JMA 過去の気象データ検索 `daily_s1.php` / `daily_a1.php` | HTML テーブル | 47局全局 OK |
+| 桜開花日（将来拡張用） | JMA 生物季節観測 CSV | CSV | DL 確認済み |
+| 梅雨入り/明け（将来拡張用） | JMA 過去の梅雨データ | HTML | 取得確認済み |
+
+---
+
+## 47局マッピング（確定済み）
+
+| 都道府県 | 都市 | AMeDAS コード | prec_no | block_no | URL種別 |
+|---|---|---|---|---|---|
+| 北海道 | 札幌 | 14163 | 14 | 47412 | s1 |
+| 青森県 | 青森 | 31312 | 31 | 47575 | s1 |
+| 岩手県 | 盛岡 | 33431 | 33 | 47584 | s1 |
+| 宮城県 | 仙台 | 34392 | 34 | 47590 | s1 |
+| 秋田県 | 秋田 | 32402 | 32 | 47582 | s1 |
+| 山形県 | 山形 | 35426 | 35 | 47588 | s1 |
+| 福島県 | 福島 | 36127 | 36 | 47595 | s1 |
+| 茨城県 | 水戸 | 40201 | 40 | 47629 | s1 |
+| 栃木県 | 宇都宮 | 41277 | 41 | 47615 | s1 |
+| 群馬県 | 前橋 | 42251 | 42 | 47624 | s1 |
+| 埼玉県 | さいたま | 43241 | 43 | 0363 | a1 |
+| 千葉県 | 千葉 | 45212 | 45 | 47682 | s1 |
+| 東京都 | 東京 | 44132 | 44 | 47662 | s1 |
+| 神奈川県 | 横浜 | 46106 | 46 | 47670 | s1 |
+| 新潟県 | 新潟 | 54232 | 54 | 47604 | s1 |
+| 富山県 | 富山 | 55102 | 55 | 47607 | s1 |
+| 石川県 | 金沢 | 56227 | 56 | 47605 | s1 |
+| 福井県 | 福井 | 57066 | 57 | 47616 | s1 |
+| 山梨県 | 甲府 | 49142 | 49 | 47638 | s1 |
+| 長野県 | 長野 | 48156 | 48 | 47610 | s1 |
+| 岐阜県 | 岐阜 | 52586 | 52 | 47632 | s1 |
+| 静岡県 | 静岡 | 50331 | 50 | 47656 | s1 |
+| 愛知県 | 名古屋 | 51106 | 51 | 47636 | s1 |
+| 三重県 | 津 | 53133 | 53 | 47651 | s1 |
+| 滋賀県 | 大津 | 60216 | 60 | 0586 | a1 |
+| 京都府 | 京都 | 61286 | 61 | 47759 | s1 |
+| 大阪府 | 大阪 | 62078 | 62 | 47772 | s1 |
+| 兵庫県 | 神戸 | 63518 | 63 | 47770 | s1 |
+| 奈良県 | 奈良 | 64036 | 64 | 47780 | s1 |
+| 和歌山県 | 和歌山 | 65042 | 65 | 47777 | s1 |
+| 鳥取県 | 鳥取 | 69122 | 69 | 47746 | s1 |
+| 島根県 | 松江 | 68132 | 68 | 47741 | s1 |
+| 岡山県 | 岡山 | 66408 | 66 | 47768 | s1 |
+| 広島県 | 広島 | 67437 | 67 | 47765 | s1 |
+| 山口県 | 山口 | 81286 | 81 | 47784 | s1 |
+| 徳島県 | 徳島 | 71106 | 71 | 47895 | s1 |
+| 香川県 | 高松 | 72086 | 72 | 47891 | s1 |
+| 愛媛県 | 松山 | 73166 | 73 | 47887 | s1 |
+| 高知県 | 高知 | 74182 | 74 | 47893 | s1 |
+| 福岡県 | 福岡 | 82182 | 82 | 47807 | s1 |
+| 佐賀県 | 佐賀 | 85142 | 85 | 47813 | s1 |
+| 長崎県 | 長崎 | 84496 | 84 | 47817 | s1 |
+| 熊本県 | 熊本 | 86141 | 86 | 47819 | s1 |
+| 大分県 | 大分 | 83216 | 83 | 47815 | s1 |
+| 宮崎県 | 宮崎 | 87376 | 87 | 47830 | s1 |
+| 鹿児島県 | 鹿児島 | 88317 | 88 | 47827 | s1 |
+| 沖縄県 | 那覇 | 91197 | 91 | 47936 | s1 |

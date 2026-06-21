@@ -3,7 +3,7 @@
 id: 33
 skill: pr-workflow
 branch-slug: fix-station-detail-chart-crash
-status: done
+status: close
 type: fix
 対象: src/resources/js/Pages/StationDetail.jsx
 内容: Chart.js の LineController / BarController が未登録のため、混合チャートの描画時に "line" is not a registered controller エラーでページ全体がクラッシュする問題の修正

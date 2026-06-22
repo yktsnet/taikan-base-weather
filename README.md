@@ -1,3 +1,5 @@
+[🇯🇵 日本語](README.md) | [🇬🇧 English](README.en.md)
+
 # TaikanBaseWeather（体感ベース天気）
 
 全国47都道府県の現在の天気を表示し、「今日は過去20年で何番目に暑い/寒い日か」をランキングで提示する Web アプリ。

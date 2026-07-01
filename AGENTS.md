@@ -14,7 +14,7 @@
 - タスク完了時、ブランチ作成操作はスキップし、現在のクラウドサンドボックス環境から直接PRを作成すること。
 - PR作成前に、必ずPR本文と同じ内容を以下のローカルパスに新規ファイルとして書き出し、実装コードと共に同一コミットに含めること。
   - パス: `issues/done/{Issueのid}_{Issueのbranch-slug}_pr.md`
-- PR本文は `.git/pr_body.md` に以下の構成で書き出し、`gh pr create --base main --title "{type}: {タイトル}" --body-file .git/pr_body.md` を実行すること。
+- PR本文は `issues/.pr_body_draft.md` に以下の構成で書き出し、`gh pr create --base main --title "{type}: {タイトル}" --body-file issues/.pr_body_draft.md` を実行すること。
 
 ### PRボディ / 控えファイルの構成
 - ## 変更内容 (Issueの内容を展開)

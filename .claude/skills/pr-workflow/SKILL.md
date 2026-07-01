@@ -16,7 +16,7 @@ disable-model-invocation: true
    - 変更したPHPファイルに対して `find src/app -name "*.php" | xargs -I{} php -l {}` を実行。
    - `docker` および `artisan` コマンドは実行禁止。
 5. PRボディと控えファイルの作成。
-   - `.git/pr_body.md` に以下の内容を書き出す。
+   - `issues/.pr_body_draft.md` に以下の内容を書き出す。
    - 同内容を `issues/done/{id}_{branch-slug}_pr.md` にもコピーして作成する。
    - 情報セキュリティ: PR本文・コミットメッセージ・控えファイルに、固有の接続情報（ドメイン実値・公開ポート・本番絶対パス・SSHユーザ名等）を直書きしない。デバイス名（`sv6`）・localhost・開発ポート・リポジトリ相対パスは可。
 
@@ -38,5 +38,5 @@ disable-model-invocation: true
    - 現在のブランチをリモートにプッシュする（例: `git push origin HEAD` または `git push origin {現在のブランチ名}`）。
 9. PRの作成。
    - 以下コマンドを実行してプルリクエストを発行。
-   `gh pr create --base main --title "{type}: {タイトル}" --body-file .git/pr_body.md`
+   `gh pr create --base main --title "{type}: {タイトル}" --body-file issues/.pr_body_draft.md`
 10. 作成されたPRのURLを出力してタスクを終了。

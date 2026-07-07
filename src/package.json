@@ -9,7 +9,7 @@
         "@inertiajs/react": "^2.0.0",
         "@tailwindcss/vite": "^4.0.0",
         "@vitejs/plugin-react": "^5.0.0",
-        "axios": "^1.6.4",
+        "axios": "^1.18.1",
         "laravel-vite-plugin": "^3.0.0",
         "react": "^19.0.0",
         "react-dom": "^19.0.0",
